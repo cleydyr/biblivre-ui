@@ -11,32 +11,54 @@ import LoadingSearch from './LoadingSearch';
 import { useState } from 'react';
 import { BiblivreSearchResult } from '../types';
 import { BibliographicSearchBar } from './BibliographicSearchBar';
+import noop from '../utils/noop';
+import api from '../api/search';
 
-type ResultState = BiblivreSearchResult | undefined;
+type SearchComponentState = {
+  results?: BiblivreSearchResult
+  query?: string
+  loading: boolean
+}
 
 export function SearchComponent() {
-  const initialQuery = EuiSearchBar.Query.MATCH_ALL
+  const initialState: SearchComponentState = {
+    loading: false
+  };
 
-  const [query, setQuery] = useState(initialQuery);
+  const [state, setState] = useState(initialState);
 
-  const [results, setResults] = useState(undefined as ResultState);
+  const doSearch = async () => {
+    setState({
+      ...state,
+      loading: true
+    })
 
-  const [loading, setLoading] = useState(false)
+    const results = await (query === undefined ? api.listAll() : api.search(query))
 
-  const doSearch = () => {
-    setLoading(!loading)
+    setState({
+      ...state,
+      loading: false,
+      results
+    })
   }
+
+  const onQueryChange = (newQuery: string) => {
+    setState({
+      ...state,
+      query: newQuery
+    })
+  }
+
+  const {
+    query,
+    loading,
+    results
+  } = state;
 
   return (
     <>
-      <EuiFlexGroup direction='row'>
-        <EuiFlexItem>
-          <BibliographicSearchBar/>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiButton onClick={() => doSearch()}>Search</EuiButton>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+      <BibliographicSearchBar query={query} onQueryChange={onQueryChange} />
+      <EuiButton onClick={doSearch}>{query ? 'Search' : 'List All'} </EuiButton>
       <div>
         {loading ? <LoadingSearch /> : <SearchResults results={results} />}
       </div>

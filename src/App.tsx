@@ -11,7 +11,7 @@ const App = () => {
   
 
   return (
-    <EuiProvider colorMode="light">
+    <EuiProvider colorMode="dark">
       <Fragment>
         <SearchComponent />
       </Fragment>
