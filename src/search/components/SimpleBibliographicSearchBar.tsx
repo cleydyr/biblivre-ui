@@ -1,5 +1,4 @@
 import {
-    EuiSearchBar,
     EuiFieldSearch
 } from '@elastic/eui';
 

@@ -20,7 +20,7 @@ type SearchComponentState = {
 
 export function SearchComponent() {
   const initialState: SearchComponentState = {
-    loading: false,
+    loading: true,
     isAdvancedMode: true
   };
 

@@ -1,5 +1,3 @@
-import searchResults from './search_result.json'
-
 import { BiblivreSearchResult } from '../types'
 
 import { toBiblivreSearchResult } from '../utils/searchConversionUtils'
@@ -55,13 +53,13 @@ const modules = {
   MENU: 'menu',
 };
 
-async function fetchi18n(url: string, i18nPath: string) {
-  const i18nResponse = await fetch(`${url}/${i18nPath}`);
+// async function fetchi18n(url: string, i18nPath: string) {
+//   const i18nResponse = await fetch(`${url}/${i18nPath}`);
 
-  const i18nScript = await i18nResponse.text();
+//   const i18nScript = await i18nResponse.text();
 
-  return JSON.parse(i18nScript.replace('Translations.translations = ', ''));
-}
+//   return JSON.parse(i18nScript.replace('Translations.translations = ', ''));
+// }
 
 async function fetchJSONFromServer(host: string, module: string, action: string, otherParams: object) {
   const response = await fetch(host, {
