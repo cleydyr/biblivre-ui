@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import { EuiSwitch } from '@elastic/eui';
+import noop from '../utils/noop';
 import AdvancedBibliographicSearchBar from './AdvancedBibliographicSearchBar';
 import SimpleBibliographicSearchBar from './SimpleBibliographicSearchBar';
 
 type BibliographicSearchBarProps = {
     query?: string
+    isAdvanced: boolean
     onQueryChange: (query: string) => void
+    onAdvancedModeChanged: (isAdvanced: boolean) => void
 }
 
 export const BibliographicSearchBar = (props: BibliographicSearchBarProps) => {
     const {
         query,
-        onQueryChange
+        isAdvanced,
+        onQueryChange,
     } = props;
-
-    const [isAdvanced, setAdvanced] = useState(false);
 
     return (
         <div>
@@ -25,7 +27,11 @@ export const BibliographicSearchBar = (props: BibliographicSearchBarProps) => {
                 }
             </div>
             <div>
-
+            <EuiSwitch
+                label="Advanced"
+                checked={isAdvanced}
+                onChange={noop}
+            />
             </div>
         </div>
     );

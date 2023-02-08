@@ -1,8 +1,5 @@
 import {
-  EuiFlexGroup,
-  EuiFlexItem,
   EuiButton,
-  EuiSearchBar
 } from '@elastic/eui';
 
 import SearchResults from './SearchResults';
@@ -18,11 +15,13 @@ type SearchComponentState = {
   results?: BiblivreSearchResult
   query?: string
   loading: boolean
+  isAdvancedMode: boolean
 }
 
 export function SearchComponent() {
   const initialState: SearchComponentState = {
-    loading: false
+    loading: false,
+    isAdvancedMode: true
   };
 
   const [state, setState] = useState(initialState);
@@ -52,12 +51,18 @@ export function SearchComponent() {
   const {
     query,
     loading,
-    results
+    results,
+    isAdvancedMode
   } = state;
 
   return (
     <>
-      <BibliographicSearchBar query={query} onQueryChange={onQueryChange} />
+      <BibliographicSearchBar
+        query={query}
+        onQueryChange={onQueryChange}
+        isAdvanced={isAdvancedMode}
+        onAdvancedModeChanged={noop}
+      />
       <EuiButton onClick={doSearch}>{query ? 'Search' : 'List All'} </EuiButton>
       <div>
         {loading ? <LoadingSearch /> : <SearchResults results={results} />}

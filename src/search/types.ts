@@ -79,12 +79,16 @@ export type SearchResult = {
   data: BiblioRecord[];
 };
 export type BiblivreSearchResult = {
-  search: SearchResult;
-  indexingGroups: IndexingGroup[];
+  message?: string;
+  message_level?: string;
+  search?: SearchResult;
+  indexingGroups?: IndexingGroup[];
   success: boolean;
 };
 export type BiblivreSearchResultRaw = {
-  search: SearchResultRaw;
-  indexing_groups: IndexingGroupRaw[];
+  message?: string;
+  message_level?: string;
+  search?: SearchResultRaw;
+  indexing_groups?: IndexingGroupRaw[];
   success: boolean;
 };

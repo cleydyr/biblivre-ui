@@ -29,7 +29,11 @@ function toData(biblioRecord: BiblioRecordRaw): BiblioRecord {
     subject: biblioRecord.shelf_location,
   };
 }
-function toSearchResult(searchResultRaw: SearchResultRaw): SearchResult {
+function toSearchResult(searchResultRaw?: SearchResultRaw): SearchResult | undefined {
+  if (searchResultRaw === undefined) {
+    return undefined;
+  }
+
   return {
     recordCount: searchResultRaw.record_count,
     indexingGroupCount: searchResultRaw.indexing_group_count
@@ -41,8 +45,8 @@ function toSearchResult(searchResultRaw: SearchResultRaw): SearchResult {
 }
 export function toBiblivreSearchResult(json: BiblivreSearchResultRaw): BiblivreSearchResult {
   return {
+    ...json,
     search: toSearchResult(json.search),
-    indexingGroups: json.indexing_groups.map(indexingGroupRaw => toIndexingGroup(indexingGroupRaw)),
-    success: json.success
+    indexingGroups: json.indexing_groups?.map(indexingGroupRaw => toIndexingGroup(indexingGroupRaw)),
   };
 }
