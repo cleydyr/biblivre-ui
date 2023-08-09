@@ -39,7 +39,7 @@ function toData(biblioRecord: BiblioRecordRaw): BiblioRecord {
     modified: new Date(biblioRecord.modified),
     publicationYear: biblioRecord.publication_year,
     shelfLocation: biblioRecord.shelf_location,
-    subject: biblioRecord.shelf_location,
+    subject: biblioRecord.subject,
   };
 }
 function toSearchResult(

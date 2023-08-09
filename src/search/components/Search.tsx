@@ -1,7 +1,6 @@
-import { EuiButton, EuiFlexGroup, EuiFlexItem, EuiFormRow } from "@elastic/eui";
+import { EuiButton, EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
 
 import SearchResults from "./SearchResults";
-import LoadingSearch from "./LoadingSearch";
 
 import { useState } from "react";
 import { BiblivreSearchResult } from "../types";
