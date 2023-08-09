@@ -33,7 +33,7 @@ const SearchResults = ({
       {
         field: "title",
         name: "Title",
-        width: "48%",
+        width: "42%",
         truncateText: true,
       },
       {
@@ -50,11 +50,11 @@ const SearchResults = ({
       {
         field: "shelfLocation",
         name: "Shelf location",
+        truncateText: true,
       },
       {
         field: "subject",
         name: "Subject",
-        // width: "36%",
         truncateText: true,
       },
     ];
