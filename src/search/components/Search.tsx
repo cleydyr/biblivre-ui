@@ -58,6 +58,7 @@ export function SearchComponent() {
 
     setState({
       ...state,
+      loading: false,
       results: newResults,
     });
   };
@@ -89,11 +90,11 @@ export function SearchComponent() {
         </EuiFlexItem>
       </EuiFlexGroup>
       <div>
-        {loading ? (
-          <LoadingSearch />
-        ) : (
-          <SearchResults results={results} onPageClick={paginateResults} />
-        )}
+        <SearchResults
+          results={results}
+          onPageClick={paginateResults}
+          isLoading={loading}
+        />
       </div>
     </>
   );

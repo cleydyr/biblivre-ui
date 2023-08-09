@@ -1,14 +1,37 @@
-import { EuiCallOut, EuiPagination } from "@elastic/eui";
+import { EuiCallOut, EuiPagination, EuiSkeletonRectangle } from "@elastic/eui";
 import { BiblivreSearchResult } from "../types";
 
 type SearchResultProps = {
   results?: BiblivreSearchResult;
   onPageClick: (page: number) => void;
+  isLoading: boolean;
 };
 
 type CalloutColor = "primary" | "success" | "warning" | "danger" | undefined;
 
-const SearchResults = ({ results, onPageClick }: SearchResultProps) => {
+const SearchResults = ({
+  results,
+  onPageClick,
+  isLoading,
+}: SearchResultProps) => {
+  if (isLoading) {
+    return (
+      <>
+        {Array(10)
+          .fill(0)
+          .map((_) => (
+            <EuiSkeletonRectangle
+              isLoading={true}
+              borderRadius="s"
+              width={540}
+              height={240}
+              style={{ margin: 16 }}
+            ></EuiSkeletonRectangle>
+          ))}
+      </>
+    );
+  }
+
   if (results?.search) {
     const { data, pageCount, page } = results?.search;
 
