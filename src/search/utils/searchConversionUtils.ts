@@ -1,17 +1,30 @@
-import { IndexingGroupRaw, IndexingGroup, IndexingGroupCountRaw, IndexingGroupCount, BiblioRecordRaw, BiblioRecord, SearchResultRaw, SearchResult, BiblivreSearchResultRaw, BiblivreSearchResult } from '../types';
+import {
+  IndexingGroupRaw,
+  IndexingGroup,
+  IndexingGroupCountRaw,
+  IndexingGroupCount,
+  BiblioRecordRaw,
+  BiblioRecord,
+  SearchResultRaw,
+  SearchResult,
+  BiblivreSearchResultRaw,
+  BiblivreSearchResult,
+} from "../types";
 
 function toIndexingGroup(indexingGroupRaw: IndexingGroupRaw): IndexingGroup {
   return {
     sortable: indexingGroupRaw.sortable,
     defaultSort: indexingGroupRaw.default_sort,
     id: indexingGroupRaw.id,
-    translationKey: indexingGroupRaw.translation_key
+    translationKey: indexingGroupRaw.translation_key,
   };
 }
-function toIndexingGroupCount(indexingGroupCount: IndexingGroupCountRaw): IndexingGroupCount {
+function toIndexingGroupCount(
+  indexingGroupCount: IndexingGroupCountRaw
+): IndexingGroupCount {
   return {
     groupId: indexingGroupCount.group_id,
-    resultCount: indexingGroupCount.result_count
+    resultCount: indexingGroupCount.result_count,
   };
 }
 function toData(biblioRecord: BiblioRecordRaw): BiblioRecord {
@@ -29,24 +42,34 @@ function toData(biblioRecord: BiblioRecordRaw): BiblioRecord {
     subject: biblioRecord.shelf_location,
   };
 }
-function toSearchResult(searchResultRaw?: SearchResultRaw): SearchResult | undefined {
+function toSearchResult(
+  searchResultRaw?: SearchResultRaw
+): SearchResult | undefined {
   if (searchResultRaw === undefined) {
     return undefined;
   }
 
   return {
     recordCount: searchResultRaw.record_count,
-    indexingGroupCount: searchResultRaw.indexing_group_count
-      .map(indexingGroupCount => toIndexingGroupCount(indexingGroupCount)),
-    data: searchResultRaw.data.map(datum => toData(datum)),
+    indexingGroupCount: searchResultRaw.indexing_group_count.map(
+      (indexingGroupCount) => toIndexingGroupCount(indexingGroupCount)
+    ),
+    data: searchResultRaw.data.map((datum) => toData(datum)),
     recordLimit: searchResultRaw.record_limit,
-    recordsPerPage: searchResultRaw.records_per_page
+    recordsPerPage: searchResultRaw.records_per_page,
+    page: searchResultRaw.page - 1,
+    pageCount: searchResultRaw.page_count,
+    time: searchResultRaw.time,
   };
 }
-export function toBiblivreSearchResult(json: BiblivreSearchResultRaw): BiblivreSearchResult {
+export function toBiblivreSearchResult(
+  json: BiblivreSearchResultRaw
+): BiblivreSearchResult {
   return {
     ...json,
     search: toSearchResult(json.search),
-    indexingGroups: json.indexing_groups?.map(indexingGroupRaw => toIndexingGroup(indexingGroupRaw)),
+    indexingGroups: json.indexing_groups?.map((indexingGroupRaw) =>
+      toIndexingGroup(indexingGroupRaw)
+    ),
   };
 }

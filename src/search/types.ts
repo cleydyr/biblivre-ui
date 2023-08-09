@@ -24,6 +24,9 @@ export type SearchResultRaw = {
   records_per_page: number;
   indexing_group_count: IndexingGroupCountRaw[];
   data: BiblioRecordRaw[];
+  page: number;
+  page_count: number;
+  time: number;
 };
 export type IndexingGroup = {
   defaultSort: boolean;
@@ -77,6 +80,9 @@ export type SearchResult = {
   recordsPerPage: number;
   indexingGroupCount: IndexingGroupCount[];
   data: BiblioRecord[];
+  page: number;
+  pageCount: number;
+  time: number;
 };
 export type BiblivreSearchResult = {
   message?: string;

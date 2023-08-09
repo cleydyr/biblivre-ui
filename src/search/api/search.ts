@@ -1,56 +1,60 @@
-import { BiblivreSearchResult } from '../types'
+import { BiblivreSearchResult } from "../types";
 
-import { toBiblivreSearchResult } from '../utils/searchConversionUtils'
+import { toBiblivreSearchResult } from "../utils/searchConversionUtils";
 
 type BibliographicSearchAPI = {
-  listAll: () => Promise<BiblivreSearchResult>
-  search: (query: string) => Promise<BiblivreSearchResult>
-}
+  listAll: () => Promise<BiblivreSearchResult>;
+  search: (query: string) => Promise<BiblivreSearchResult>;
+};
+
+const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
 
 const api: BibliographicSearchAPI = {
   listAll: async () => {
-    const responseBody = await fetchJSONFromServer('http://localhost/single/', 'cataloging.bibliographic',
-      'search',
+    const responseBody = await fetchJSONFromServer(
+      url,
+      "cataloging.bibliographic",
+      "search",
       {
         search_parameters: JSON.stringify({
-          database: 'main',
-          material_type: 'all',
-          search_mode: 'list_all'
-        })
+          database: "main",
+          material_type: "all",
+          search_mode: "list_all",
+        }),
       }
     );
 
     return toBiblivreSearchResult(responseBody);
   },
   search: async (query: string) => {
-    const responseBody = await fetchJSONFromServer('http://localhost/single/', 'cataloging.bibliographic',
-      'search',
+    const responseBody = await fetchJSONFromServer(
+      url,
+      "cataloging.bibliographic",
+      "search",
       {
         search_parameters: JSON.stringify({
-          database: 'main',
-          material_type: 'all',
-          search_mode: 'simple',
-          search_terms: [
-            {query}
-          ]
-        })
+          database: "main",
+          material_type: "all",
+          search_mode: "simple",
+          search_terms: [{ query }],
+        }),
       }
     );
 
     return toBiblivreSearchResult(responseBody);
-  }
-}
+  },
+};
 
 const actions = {
-  SEARCH: 'search',
-  PAGINATE: 'paginate',
-  PING: 'ping',
-  OPEN: 'open',
+  SEARCH: "search",
+  PAGINATE: "paginate",
+  PING: "ping",
+  OPEN: "open",
 };
 
 const modules = {
-  CATALOGING_BIBLIOGRAPHIC: 'cataloging.bibliographic',
-  MENU: 'menu',
+  CATALOGING_BIBLIOGRAPHIC: "cataloging.bibliographic",
+  MENU: "menu",
 };
 
 // async function fetchi18n(url: string, i18nPath: string) {
@@ -61,41 +65,54 @@ const modules = {
 //   return JSON.parse(i18nScript.replace('Translations.translations = ', ''));
 // }
 
-async function fetchJSONFromServer(host: string, module: string, action: string, otherParams: object) {
+async function fetchJSONFromServer(
+  host: string,
+  module: string,
+  action: string,
+  otherParams: object
+) {
   const response = await fetch(host, {
-    method: 'POST',
+    method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     },
     body: new URLSearchParams({
-      controller: 'json',
+      controller: "json",
       module,
       action,
-      ...otherParams
+      ...otherParams,
     }).toString(),
   });
 
   return response.json();
 }
 
-export async function getCatalographicSearchResults(host: string, query: string) {
+export async function getCatalographicSearchResults(
+  host: string,
+  query: string
+) {
   const result = fetchJSONFromServer(
     host,
     modules.CATALOGING_BIBLIOGRAPHIC,
     actions.SEARCH,
     {
       search_parameters: JSON.stringify({
-        database: 'main',
-        material_type: 'all',
-        search_mode: query ? 'simple' : 'list_all',
+        database: "main",
+        material_type: "all",
+        search_mode: query ? "simple" : "list_all",
         search_terms: query ? [{ query }] : undefined,
-      })
-    });
+      }),
+    }
+  );
 
   return result;
 }
 
-export async function paginateCatalographicSearchResults(host: string, search_id: number, page: number) {
+export async function paginateCatalographicSearchResults(
+  host: string,
+  search_id: number,
+  page: number
+) {
   const result = fetchJSONFromServer(
     host,
     modules.CATALOGING_BIBLIOGRAPHIC,
@@ -115,9 +132,9 @@ export async function openBibliographicRecord(host: string, recordId: number) {
     modules.CATALOGING_BIBLIOGRAPHIC,
     actions.OPEN,
     {
-      id: recordId
+      id: recordId,
     }
   );
 }
 
-export default api
+export default api;
