@@ -25,10 +25,7 @@ export function SearchComponent() {
   const [state, setState] = useState(initialState);
 
   const doSearch = async () => {
-    setState({
-      ...state,
-      loading: true,
-    });
+    toggleLoadingResults();
 
     const results = await (query === undefined
       ? api.listAll()
@@ -45,6 +42,30 @@ export function SearchComponent() {
     setState({
       ...state,
       query: newQuery,
+    });
+  };
+
+  const paginateResults = async (page: number): Promise<void> => {
+    toggleLoadingResults();
+
+    const { results } = state;
+
+    const newResults = await api.paginate(
+      page + 1,
+      results?.search?.id ?? 0,
+      0
+    );
+
+    setState({
+      ...state,
+      results: newResults,
+    });
+  };
+
+  const toggleLoadingResults = () => {
+    setState({
+      ...state,
+      loading: true,
     });
   };
 
@@ -68,7 +89,11 @@ export function SearchComponent() {
         </EuiFlexItem>
       </EuiFlexGroup>
       <div>
-        {loading ? <LoadingSearch /> : <SearchResults results={results} />}
+        {loading ? (
+          <LoadingSearch />
+        ) : (
+          <SearchResults results={results} onPageClick={paginateResults} />
+        )}
       </div>
     </>
   );

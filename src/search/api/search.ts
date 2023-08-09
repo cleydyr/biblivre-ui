@@ -5,6 +5,11 @@ import { toBiblivreSearchResult } from "../utils/searchConversionUtils";
 type BibliographicSearchAPI = {
   listAll: () => Promise<BiblivreSearchResult>;
   search: (query: string) => Promise<BiblivreSearchResult>;
+  paginate: (
+    page: number,
+    search_id: number,
+    indexingGroup: number
+  ) => Promise<BiblivreSearchResult>;
 };
 
 const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
@@ -38,6 +43,21 @@ const api: BibliographicSearchAPI = {
           search_mode: "simple",
           search_terms: [{ query }],
         }),
+      }
+    );
+
+    return toBiblivreSearchResult(responseBody);
+  },
+
+  paginate: async (page: number, searchId: number, indexingGroup: number) => {
+    const responseBody = await fetchJSONFromServer(
+      url,
+      "cataloging.bibliographic",
+      "paginate",
+      {
+        page,
+        search_id: searchId,
+        indexing_group: indexingGroup,
       }
     );
 
@@ -111,7 +131,8 @@ export async function getCatalographicSearchResults(
 export async function paginateCatalographicSearchResults(
   host: string,
   search_id: number,
-  page: number
+  page: number,
+  indexing_group: number
 ) {
   const result = fetchJSONFromServer(
     host,

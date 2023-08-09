@@ -1,27 +1,29 @@
 import { EuiCallOut, EuiPagination } from "@elastic/eui";
 import { BiblivreSearchResult } from "../types";
-import noop from "../utils/noop";
 
 type SearchResultProps = {
   results?: BiblivreSearchResult;
+  onPageClick: (page: number) => void;
 };
 
 type CalloutColor = "primary" | "success" | "warning" | "danger" | undefined;
 
-const SearchResults = ({ results }: SearchResultProps) => {
+const SearchResults = ({ results, onPageClick }: SearchResultProps) => {
   if (results?.search) {
+    const { data, pageCount, page } = results?.search;
+
     return (
       <>
         <ul>
-          {results?.search?.data.map((result) => (
-            <li key={result.id}>{result.title}</li>
+          {data.map((record) => (
+            <li key={record.id}>{record.title}</li>
           ))}
         </ul>
         <EuiPagination
-          aria-label="Few pages example"
-          pageCount={results?.search.pageCount}
-          activePage={results?.search?.page}
-          onPageClick={noop}
+          aria-label={`Pagination component showing page ${page} of ${pageCount}`}
+          pageCount={pageCount}
+          activePage={page}
+          onPageClick={onPageClick}
         />
       </>
     );

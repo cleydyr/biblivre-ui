@@ -60,6 +60,7 @@ function toSearchResult(
     page: searchResultRaw.page - 1,
     pageCount: searchResultRaw.page_count,
     time: searchResultRaw.time,
+    id: searchResultRaw.id,
   };
 }
 export function toBiblivreSearchResult(

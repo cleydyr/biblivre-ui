@@ -27,6 +27,7 @@ export type SearchResultRaw = {
   page: number;
   page_count: number;
   time: number;
+  id: number;
 };
 export type IndexingGroup = {
   defaultSort: boolean;
@@ -83,6 +84,7 @@ export type SearchResult = {
   page: number;
   pageCount: number;
   time: number;
+  id: number;
 };
 export type BiblivreSearchResult = {
   message?: string;
