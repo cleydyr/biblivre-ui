@@ -20,8 +20,8 @@ type SearchComponentState = {
 
 export function SearchComponent() {
   const initialState: SearchComponentState = {
-    loading: true,
-    isAdvancedMode: true
+    loading: false,
+    isAdvancedMode: false
   };
 
   const [state, setState] = useState(initialState);
