@@ -16,13 +16,7 @@ type SearchResultProps = {
 };
 
 const pageCount = (recordCount: number, recordsPerPage: number): number => {
-  const pages = recordCount / recordsPerPage;
-
-  if (recordCount % recordsPerPage === 0) {
-    return recordCount / recordsPerPage;
-  }
-
-  return (pages | 0) + 1;
+  return Math.ceil(recordCount / recordsPerPage);
 };
 
 const renderSearchResults = (
