@@ -265,3 +265,10 @@ export type AdvancedSearchParameters = {
 export type SearchParameters =
   | SimpleSearchParameters
   | AdvancedSearchParameters;
+
+export type CalloutColor =
+  | "primary"
+  | "success"
+  | "warning"
+  | "danger"
+  | undefined;

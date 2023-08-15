@@ -1,26 +1,39 @@
-import { EuiCallOut, EuiFlexGrid, EuiProgress, Pagination } from "@elastic/eui";
-import { BiblivreSearchResult } from "../types";
+import {
+  EuiCallOut,
+  EuiFlexGrid,
+  EuiPagination,
+  EuiProgress,
+} from "@elastic/eui";
+import { BiblivreSearchResult, CalloutColor, SearchResult } from "../types";
 import RecordSearchResultItem from "./RecordSearchResultItem";
+import { ReactNode } from "react";
 
 type SearchResultProps = {
   results?: BiblivreSearchResult;
-  onPageClick: (page: number) => void;
+  onPageClick: (page: number) => Promise<void>;
   isLoading: boolean;
 };
 
-type CalloutColor = "primary" | "success" | "warning" | "danger" | undefined;
+const pageCount = (recordCount: number, recordsPerPage: number): number => {
+  const pages = recordCount / recordsPerPage;
 
-const SearchResults = ({
-  results,
-  onPageClick,
-  isLoading,
-}: SearchResultProps) => {
-  if (results?.search) {
-    const { data, recordCount, recordsPerPage, page } = results?.search;
+  if (recordCount % recordsPerPage === 0) {
+    return recordCount / recordsPerPage;
+  }
 
-    return (
+  return (pages | 0) + 1;
+};
+
+const renderSearchResults = (
+  search: SearchResult,
+  isLoading: boolean,
+  onPageClick: (page: number) => Promise<void>
+): ReactNode => {
+  const { data, recordCount, recordsPerPage, page } = search;
+
+  return (
+    <EuiFlexGrid>
       <EuiFlexGrid columns={4}>
-        {isLoading && <EuiProgress size="xs" position="fixed" />}
         {data.map((record) => (
           <RecordSearchResultItem
             key={record.id}
@@ -29,17 +42,38 @@ const SearchResults = ({
           />
         ))}
       </EuiFlexGrid>
-    );
-  }
+      <EuiPagination
+        pageCount={pageCount(recordCount, recordsPerPage)}
+        activePage={page}
+        onPageClick={onPageClick}
+      />
+    </EuiFlexGrid>
+  );
+};
 
-  return (
-    <>
-      {isLoading && <EuiProgress size="m" position="fixed" />}
+const renderCallout = (results?: BiblivreSearchResult): ReactNode => {
+  if (results?.message) {
+    return (
       <EuiCallOut
         title={results?.message}
         color={results?.message_level as CalloutColor}
       ></EuiCallOut>
-    </>
+    );
+  }
+};
+
+const SearchResults = ({
+  results,
+  onPageClick,
+  isLoading,
+}: SearchResultProps) => {
+  return (
+    <EuiFlexGrid>
+      {isLoading && <EuiProgress size="s" position="fixed" color="primary" />}
+      {results?.search
+        ? renderSearchResults(results.search, isLoading, onPageClick)
+        : renderCallout(results)}
+    </EuiFlexGrid>
   );
 };
 
