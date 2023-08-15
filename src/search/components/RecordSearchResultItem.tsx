@@ -1,8 +1,6 @@
 import {
   EuiAvatar,
-  EuiButton,
   EuiButtonEmpty,
-  EuiButtonIcon,
   EuiCard,
   EuiFlexGrid,
   EuiFlexGroup,
@@ -13,14 +11,16 @@ import {
   EuiSkeletonTitle,
   EuiSpacer,
   EuiText,
+  useEuiI18n,
 } from "@elastic/eui";
-import { type BiblioRecord } from "../types";
+import { OpenBiblivreBibliographicRecord, type BiblioRecord } from "../types";
 import { useEffect, useState } from "react";
+import api from "../api/search";
 
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
   isLoading: boolean;
-  onClick: () => void;
+  onClick: (openedRecord?: OpenBiblivreBibliographicRecord) => void;
   onAddToExport: () => void;
 };
 
@@ -29,6 +29,7 @@ const IMAGE_SIZE = 320;
 type RecordSearchResultItemState = {
   imageURL: string;
   isLoadingCover: boolean;
+  openedRecord?: OpenBiblivreBibliographicRecord;
 };
 
 const RecordSearchResultItem = ({
@@ -46,18 +47,29 @@ const RecordSearchResultItem = ({
 
   const edition = record.json?.["250"]?.[0]?.["a"]?.[0];
 
-  const { imageURL, isLoadingCover } = state;
+  const { imageURL, isLoadingCover, openedRecord } = state;
 
   useEffect(() => {
-    fetch(`https://loremflickr.com/${IMAGE_SIZE}/${IMAGE_SIZE}/book`)
-      .then((response) => response.blob())
-      .then(URL.createObjectURL)
-      .then((url) => setState({ imageURL: url, isLoadingCover: false }));
+    Promise.all([
+      fetch(`https://loremflickr.com/${IMAGE_SIZE}/${IMAGE_SIZE}/book`),
+      api.open(record.id),
+    ])
+      .then(([response, openedRecord]) =>
+        Promise.all([response.blob(), Promise.resolve(openedRecord)])
+      )
+      .then(([blob, { data: openedRecord }]) => {
+        setState({
+          ...state,
+          imageURL: URL.createObjectURL(blob),
+          openedRecord,
+          isLoadingCover: false,
+        });
+      });
   }, [record.id]);
 
   return (
     <EuiCard
-      onClick={onClick}
+      onClick={() => onClick(openedRecord)}
       image={
         <EuiFlexGroup justifyContent="center">
           <EuiSkeletonRectangle
@@ -89,7 +101,7 @@ const RecordSearchResultItem = ({
       titleElement="h4"
       textAlign="left"
       betaBadgeProps={{
-        label: record.materialType,
+        label: useEuiI18n(`marc.material_type.${record.materialType}`, "Book"),
       }}
       footer={
         <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">

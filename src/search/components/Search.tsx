@@ -1,11 +1,17 @@
-import { EuiFlexGroup, EuiFlexItem, EuiFlyout } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
 
 import SearchResults from "./SearchResults";
 
 import { useState } from "react";
-import { BiblioRecord, BiblivreSearchResult, SearchParameters } from "../types";
+import {
+  BiblioRecord,
+  BiblivreSearchResult,
+  OpenBiblivreBibliographicRecord,
+  SearchParameters,
+} from "../types";
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
 import api from "../api/search";
+import { DetailedRecordFlyout } from "./DetailedRecordFlyout";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;
@@ -13,7 +19,7 @@ type SearchComponentState = {
   isAdvancedMode: boolean;
   isShowExportFlyout: boolean;
   exportResults: Array<BiblioRecord>;
-  isShowRecordDetailsFlyout: boolean;
+  detailedRecord?: OpenBiblivreBibliographicRecord;
 };
 
 const initialState: SearchComponentState = {
@@ -21,7 +27,6 @@ const initialState: SearchComponentState = {
   isAdvancedMode: false,
   isShowExportFlyout: false,
   exportResults: [],
-  isShowRecordDetailsFlyout: false,
 };
 
 export function SearchComponent() {
@@ -64,10 +69,12 @@ export function SearchComponent() {
     });
   };
 
-  const setRecordDetailFlyoutVisible = (visible: boolean) => {
+  const setDetailedRecord = (
+    detailedRecord?: OpenBiblivreBibliographicRecord
+  ) => {
     setState({
       ...state,
-      isShowRecordDetailsFlyout: visible,
+      detailedRecord,
     });
   };
 
@@ -78,20 +85,7 @@ export function SearchComponent() {
     });
   };
 
-  const { loading, results, isShowRecordDetailsFlyout } = state;
-
-  let recordDetailsFlyout;
-
-  if (isShowRecordDetailsFlyout) {
-    recordDetailsFlyout = (
-      <EuiFlyout
-        type="overlay"
-        onClose={() => setRecordDetailFlyoutVisible(false)}
-      >
-        <h1>Hello</h1>
-      </EuiFlyout>
-    );
-  }
+  const { loading, results, detailedRecord } = state;
 
   return (
     <EuiFlexGroup direction="column">
@@ -104,12 +98,20 @@ export function SearchComponent() {
           onPageClick={paginateResults}
           isLoading={loading}
           onAddToExport={addToExport}
-          onRecordClick={(record: BiblioRecord) => {
-            setRecordDetailFlyoutVisible(true);
-          }}
+          onRecordClick={setDetailedRecord}
         />
       </EuiFlexItem>
-      {recordDetailsFlyout}
+      {detailedRecord && (
+        <DetailedRecordFlyout
+          record={detailedRecord}
+          onClose={() => setDetailedRecord(undefined)}
+        />
+      )}
     </EuiFlexGroup>
   );
 }
+
+export type DetailedRecordFlyoutProps = {
+  record: OpenBiblivreBibliographicRecord;
+  onClose: () => void;
+};

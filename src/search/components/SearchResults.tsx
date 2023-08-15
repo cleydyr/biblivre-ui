@@ -9,6 +9,7 @@ import {
   BiblioRecord,
   BiblivreSearchResult,
   CalloutColor,
+  OpenBiblivreBibliographicRecord,
   SearchResult,
 } from "../types";
 import RecordSearchResultItem from "./RecordSearchResultItem";
@@ -19,7 +20,7 @@ type SearchResultProps = {
   onPageClick: (page: number) => Promise<void>;
   isLoading: boolean;
   onAddToExport: (record: BiblioRecord) => void;
-  onRecordClick: (record: BiblioRecord) => void;
+  onRecordClick: (record?: OpenBiblivreBibliographicRecord) => void;
 };
 
 const pageCount = (recordCount: number, recordsPerPage: number): number => {
@@ -31,7 +32,7 @@ const renderSearchResults = (
   isLoading: boolean,
   onPageClick: (page: number) => Promise<void>,
   onAddToExport: (record: BiblioRecord) => void,
-  onRecordClick: (record: BiblioRecord) => void
+  onRecordClick: (record?: OpenBiblivreBibliographicRecord) => void
 ): ReactNode => {
   const { data, recordCount, recordsPerPage, page } = search;
 
@@ -44,7 +45,7 @@ const renderSearchResults = (
             record={record}
             isLoading={isLoading}
             onAddToExport={() => onAddToExport(record)}
-            onClick={() => onRecordClick(record)}
+            onClick={onRecordClick}
           />
         ))}
       </EuiFlexGrid>
