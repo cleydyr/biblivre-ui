@@ -10,7 +10,7 @@ export const select = (html: string | null | undefined) => (path: string) => {
   return xpath.select(path, doc);
 };
 
-export async function fetchAndselect(url: RequestInfo | URL, paths: any[]) {
+export async function fetchAndselect(url: string, paths: any[]) {
   const response = await fetch(url);
 
   const html = await response.text();

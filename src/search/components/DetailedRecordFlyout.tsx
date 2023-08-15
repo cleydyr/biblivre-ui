@@ -1,12 +1,18 @@
 import {
   EuiBasicTable,
   EuiCodeBlock,
+  EuiDescriptionList,
+  EuiFlexGrid,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
   EuiTab,
   EuiTabs,
+  EuiText,
+  EuiTitle,
   useEuiI18n,
 } from "@elastic/eui";
 import { field } from "../../translations/utils";
@@ -27,12 +33,11 @@ export function DetailedRecordFlyout({
       id: "brief",
       name: useEuiI18n("cataloging.tabs.brief", "Resumo Catalográfico"),
       content: (detailedRecord: OpenBiblivreBibliographicRecord) => (
-        <EuiBasicTable
-          columns={detailedRecord.fields.map(({ value, datafield }) => ({
-            render: () => value,
-            name: field(datafield, ""),
+        <EuiDescriptionList
+          listItems={detailedRecord.fields.map(({ value, datafield }) => ({
+            title: field(datafield, ""),
+            description: value,
           }))}
-          items={[detailedRecord]}
         />
       ),
     },
@@ -45,7 +50,7 @@ export function DetailedRecordFlyout({
       id: "marc",
       name: useEuiI18n("cataloging.tabs.marc", "MARC 21"),
       content: (detailedRecord: OpenBiblivreBibliographicRecord) => (
-        <EuiCodeBlock isCopyable overflowHeight={300}>
+        <EuiCodeBlock isCopyable overflowHeight={960}>
           {detailedRecord.marc}
         </EuiCodeBlock>
       ),
@@ -77,6 +82,7 @@ export function DetailedRecordFlyout({
         <EuiTabs>
           {detailedRecordTabs.map((tab) => (
             <EuiTab
+              key={tab.id}
               isSelected={tab.id === selectedTabId}
               onClick={() => setState({ selectedTabId: tab.id })}
             >
