@@ -1,5 +1,8 @@
 import {
   EuiAvatar,
+  EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon,
   EuiCard,
   EuiFlexGrid,
   EuiFlexGroup,
@@ -17,6 +20,8 @@ import { useEffect, useState } from "react";
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
   isLoading: boolean;
+  onClick: () => void;
+  onAddToExport: () => void;
 };
 
 const IMAGE_SIZE = 320;
@@ -29,6 +34,8 @@ type RecordSearchResultItemState = {
 const RecordSearchResultItem = ({
   record,
   isLoading,
+  onClick,
+  onAddToExport,
 }: RecordSearchResultItemPropos) => {
   const initialState: RecordSearchResultItemState = {
     imageURL: "",
@@ -50,7 +57,7 @@ const RecordSearchResultItem = ({
 
   return (
     <EuiCard
-      onClick={() => {}}
+      onClick={onClick}
       image={
         <EuiFlexGroup justifyContent="center">
           <EuiSkeletonRectangle
@@ -85,13 +92,29 @@ const RecordSearchResultItem = ({
         label: record.materialType,
       }}
       footer={
-        <EuiSkeletonTitle isLoading={isLoading}>
-          {record.holdingsAvailable > 0 ? (
-            <EuiHealth color="success">{`${record.holdingsAvailable} disponíveis`}</EuiHealth>
-          ) : (
-            <EuiHealth color="danger">{`Indisponível (${record.holdingsReserved} reservas)`}</EuiHealth>
-          )}
-        </EuiSkeletonTitle>
+        <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+          <EuiSkeletonTitle isLoading={isLoading}>
+            {record.holdingsAvailable > 0 ? (
+              <EuiHealth color="success" textSize="xs">
+                Disponível
+              </EuiHealth>
+            ) : (
+              <EuiHealth color="danger" textSize="xs">
+                Indisponível
+              </EuiHealth>
+            )}
+          </EuiSkeletonTitle>
+          <EuiSkeletonRectangle isLoading={isLoading}>
+            <EuiButtonEmpty
+              size="xs"
+              iconType="exportAction"
+              iconSize="s"
+              onClick={onAddToExport}
+            >
+              Exportar
+            </EuiButtonEmpty>
+          </EuiSkeletonRectangle>
+        </EuiFlexGroup>
       }
     >
       <EuiFlexGrid>

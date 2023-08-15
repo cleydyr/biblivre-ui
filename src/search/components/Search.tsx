@@ -1,9 +1,9 @@
-import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem, EuiFlyout } from "@elastic/eui";
 
 import SearchResults from "./SearchResults";
 
 import { useState } from "react";
-import { BiblivreSearchResult, SearchParameters } from "../types";
+import { BiblioRecord, BiblivreSearchResult, SearchParameters } from "../types";
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
 import api from "../api/search";
 
@@ -11,14 +11,20 @@ type SearchComponentState = {
   results?: BiblivreSearchResult;
   loading: boolean;
   isAdvancedMode: boolean;
+  isShowExportFlyout: boolean;
+  exportResults: Array<BiblioRecord>;
+  isShowRecordDetailsFlyout: boolean;
+};
+
+const initialState: SearchComponentState = {
+  loading: false,
+  isAdvancedMode: false,
+  isShowExportFlyout: false,
+  exportResults: [],
+  isShowRecordDetailsFlyout: false,
 };
 
 export function SearchComponent() {
-  const initialState: SearchComponentState = {
-    loading: false,
-    isAdvancedMode: false,
-  };
-
   const [state, setState] = useState(initialState);
 
   const doSearch = async ({ query }: SearchParameters) => {
@@ -58,7 +64,34 @@ export function SearchComponent() {
     });
   };
 
-  const { loading, results } = state;
+  const setRecordDetailFlyoutVisible = (visible: boolean) => {
+    setState({
+      ...state,
+      isShowRecordDetailsFlyout: visible,
+    });
+  };
+
+  const addToExport = (record: BiblioRecord): void => {
+    setState({
+      ...state,
+      exportResults: [...state.exportResults, record],
+    });
+  };
+
+  const { loading, results, isShowRecordDetailsFlyout } = state;
+
+  let recordDetailsFlyout;
+
+  if (isShowRecordDetailsFlyout) {
+    recordDetailsFlyout = (
+      <EuiFlyout
+        type="overlay"
+        onClose={() => setRecordDetailFlyoutVisible(false)}
+      >
+        <h1>Hello</h1>
+      </EuiFlyout>
+    );
+  }
 
   return (
     <EuiFlexGroup direction="column">
@@ -70,8 +103,13 @@ export function SearchComponent() {
           results={results}
           onPageClick={paginateResults}
           isLoading={loading}
+          onAddToExport={addToExport}
+          onRecordClick={(record: BiblioRecord) => {
+            setRecordDetailFlyoutVisible(true);
+          }}
         />
       </EuiFlexItem>
+      {recordDetailsFlyout}
     </EuiFlexGroup>
   );
 }

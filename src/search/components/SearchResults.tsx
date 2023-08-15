@@ -5,7 +5,12 @@ import {
   EuiPagination,
   EuiProgress,
 } from "@elastic/eui";
-import { BiblivreSearchResult, CalloutColor, SearchResult } from "../types";
+import {
+  BiblioRecord,
+  BiblivreSearchResult,
+  CalloutColor,
+  SearchResult,
+} from "../types";
 import RecordSearchResultItem from "./RecordSearchResultItem";
 import { ReactNode } from "react";
 
@@ -13,6 +18,8 @@ type SearchResultProps = {
   results?: BiblivreSearchResult;
   onPageClick: (page: number) => Promise<void>;
   isLoading: boolean;
+  onAddToExport: (record: BiblioRecord) => void;
+  onRecordClick: (record: BiblioRecord) => void;
 };
 
 const pageCount = (recordCount: number, recordsPerPage: number): number => {
@@ -22,7 +29,9 @@ const pageCount = (recordCount: number, recordsPerPage: number): number => {
 const renderSearchResults = (
   search: SearchResult,
   isLoading: boolean,
-  onPageClick: (page: number) => Promise<void>
+  onPageClick: (page: number) => Promise<void>,
+  onAddToExport: (record: BiblioRecord) => void,
+  onRecordClick: (record: BiblioRecord) => void
 ): ReactNode => {
   const { data, recordCount, recordsPerPage, page } = search;
 
@@ -34,6 +43,8 @@ const renderSearchResults = (
             key={record.id}
             record={record}
             isLoading={isLoading}
+            onAddToExport={() => onAddToExport(record)}
+            onClick={() => onRecordClick(record)}
           />
         ))}
       </EuiFlexGrid>
@@ -63,12 +74,20 @@ const SearchResults = ({
   results,
   onPageClick,
   isLoading,
+  onAddToExport,
+  onRecordClick,
 }: SearchResultProps) => {
   return (
     <EuiFlexGrid>
       {isLoading && <EuiProgress size="s" position="fixed" color="primary" />}
       {results?.search
-        ? renderSearchResults(results.search, isLoading, onPageClick)
+        ? renderSearchResults(
+            results.search,
+            isLoading,
+            onPageClick,
+            onAddToExport,
+            onRecordClick
+          )
         : renderCallout(results)}
     </EuiFlexGrid>
   );
