@@ -1,6 +1,12 @@
-import { BiblivreSearchResult } from "../types";
+import {
+  BiblivreSearchResult,
+  OpenBiblivreBibliographicRecordResult,
+} from "../types";
 
-import { toBiblivreSearchResult } from "../utils/searchConversionUtils";
+import {
+  toBiblivreSearchResult,
+  toOpenBiblivreBibliographicRecordResult,
+} from "../utils/searchConversionUtils";
 
 type BibliographicSearchAPI = {
   listAll: () => Promise<BiblivreSearchResult>;
@@ -10,6 +16,7 @@ type BibliographicSearchAPI = {
     search_id: number,
     indexingGroup: number
   ) => Promise<BiblivreSearchResult>;
+  open: (id: number) => Promise<OpenBiblivreBibliographicRecordResult>;
 };
 
 const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
@@ -35,7 +42,7 @@ const api: BibliographicSearchAPI = {
     const responseBody = await fetchJSONFromServer(
       url,
       "cataloging.bibliographic",
-      "search",
+      actions.SEARCH,
       {
         search_parameters: JSON.stringify({
           database: "main",
@@ -53,7 +60,7 @@ const api: BibliographicSearchAPI = {
     const responseBody = await fetchJSONFromServer(
       url,
       "cataloging.bibliographic",
-      "paginate",
+      actions.PAGINATE,
       {
         page,
         search_id: searchId,
@@ -62,6 +69,21 @@ const api: BibliographicSearchAPI = {
     );
 
     return toBiblivreSearchResult(responseBody);
+  },
+
+  open: async function (
+    id: number
+  ): Promise<OpenBiblivreBibliographicRecordResult> {
+    const responseBody = await fetchJSONFromServer(
+      url,
+      "cataloging.bibliographic",
+      actions.OPEN,
+      {
+        id,
+      }
+    );
+
+    return toOpenBiblivreBibliographicRecordResult(responseBody);
   },
 };
 
@@ -90,7 +112,7 @@ async function fetchJSONFromServer(
   module: string,
   action: string,
   otherParams: object
-) {
+): Promise<any> {
   const response = await fetch(host, {
     method: "POST",
     headers: {

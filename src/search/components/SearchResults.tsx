@@ -1,10 +1,6 @@
-import {
-  EuiBasicTable,
-  EuiCallOut,
-  EuiProgress,
-  Pagination,
-} from "@elastic/eui";
+import { EuiCallOut, EuiFlexGrid, EuiProgress, Pagination } from "@elastic/eui";
 import { BiblivreSearchResult } from "../types";
+import RecordSearchResultItem from "./RecordSearchResultItem";
 
 type SearchResultProps = {
   results?: BiblivreSearchResult;
@@ -22,54 +18,17 @@ const SearchResults = ({
   if (results?.search) {
     const { data, recordCount, recordsPerPage, page } = results?.search;
 
-    const pagination: Pagination = {
-      pageIndex: page,
-      pageSize: recordsPerPage,
-      totalItemCount: recordCount,
-      showPerPageOptions: false,
-    };
-
-    const columns = [
-      {
-        field: "title",
-        name: "Title",
-        width: "42%",
-        truncateText: true,
-      },
-      {
-        field: "author",
-        name: "Author",
-        width: "16%",
-        truncateText: true,
-      },
-      {
-        field: "publicationYear",
-        name: "Publication Year",
-        width: "8%",
-      },
-      {
-        field: "shelfLocation",
-        name: "Shelf location",
-        truncateText: true,
-      },
-      {
-        field: "subject",
-        name: "Subject",
-        truncateText: true,
-      },
-    ];
-
     return (
-      <>
-        {isLoading && <EuiProgress size="m" position="fixed" />}
-        <EuiBasicTable
-          tableCaption="Search results"
-          items={data}
-          columns={columns}
-          pagination={pagination}
-          onChange={({ page: { index } }) => onPageClick(index)}
-        />
-      </>
+      <EuiFlexGrid columns={4}>
+        {isLoading && <EuiProgress size="xs" position="fixed" />}
+        {data.map((record) => (
+          <RecordSearchResultItem
+            key={record.id}
+            record={record}
+            isLoading={isLoading}
+          />
+        ))}
+      </EuiFlexGrid>
     );
   }
 

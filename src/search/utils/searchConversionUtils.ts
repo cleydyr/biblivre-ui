@@ -9,6 +9,10 @@ import {
   SearchResult,
   BiblivreSearchResultRaw,
   BiblivreSearchResult,
+  OpenBiblivreBibliographicRecordResultRaw,
+  OpenBiblivreBibliographicRecordRaw,
+  OpenBiblivreBibliographicRecord,
+  OpenBiblivreBibliographicRecordResult,
 } from "../types";
 
 function toIndexingGroup(indexingGroupRaw: IndexingGroupRaw): IndexingGroup {
@@ -72,5 +76,35 @@ export function toBiblivreSearchResult(
     indexingGroups: json.indexing_groups?.map((indexingGroupRaw) =>
       toIndexingGroup(indexingGroupRaw)
     ),
+  };
+}
+
+function toOpenBiblivreBibliographicRecord(
+  json: OpenBiblivreBibliographicRecordRaw | undefined
+): OpenBiblivreBibliographicRecord {
+  if (json === undefined) {
+    throw new Error(`can't parse undefined json`);
+  }
+
+  return {
+    ...json,
+    created: new Date(json.created),
+    modified: new Date(json.modified),
+    holdingsAvailable: json.holdings_available,
+    holdingsCount: json.holdings_count,
+    holdingsLent: json.holdings_lent,
+    holdingsReserved: json.holdings_reserved,
+    materialType: json.material_type,
+    publicationYear: json.publication_year,
+    shelfLocation: json.shelf_location,
+  };
+}
+
+export function toOpenBiblivreBibliographicRecordResult(
+  json: OpenBiblivreBibliographicRecordResultRaw
+): OpenBiblivreBibliographicRecordResult {
+  return {
+    ...json,
+    data: toOpenBiblivreBibliographicRecord(json.data),
   };
 }

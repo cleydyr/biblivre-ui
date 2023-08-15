@@ -16,7 +16,6 @@ const SimpleBibliographicSearchBar = (
       onChange={(evt) => {
         onQueryChange(evt.target.value);
       }}
-      fullWidth
     />
   );
 };

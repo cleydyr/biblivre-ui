@@ -1,19 +1,18 @@
 export type BiblioRecordRaw = {
   holdings_count: number;
   holdings_lent: number;
-  attachments: Attachment[];
   created: string;
   author: string;
   subject: string;
   isbn?: string;
   title: string;
   shelf_location: string;
-  material_type: string;
+  material_type: MaterialType;
   database: string;
   publication_year: string;
   marc: string;
   modified: string;
-  json: object;
+  json: BiblivreMarcJson;
   id: number;
   holdings_reserved: number;
   holdings_available: number;
@@ -58,7 +57,6 @@ type Attachment = {
 export type BiblioRecord = {
   holdingsCount: number;
   holdingsLent: number;
-  attachments: Attachment[];
   created: Date;
   author: string;
   subject: string;
@@ -70,7 +68,7 @@ export type BiblioRecord = {
   publicationYear: string;
   marc: string;
   modified: Date;
-  json: object;
+  json: BiblivreMarcJson;
   id: number;
   holdingsReserved: number;
   holdingsAvailable: number;
@@ -100,3 +98,158 @@ export type BiblivreSearchResultRaw = {
   indexing_groups?: IndexingGroupRaw[];
   success: boolean;
 };
+
+export type FieldRaw = {
+  datafield: string;
+  value: string;
+};
+
+export type HoldingAvailability = "available" | "unavailable";
+
+export type MaterialType =
+  | "book"
+  | "pamphlet"
+  | "manuscript"
+  | "thesis"
+  | "periodic"
+  | "articles"
+  | "computer_legible"
+  | "map"
+  | "photo"
+  | "movie"
+  | "score"
+  | "music"
+  | "nonmusical_sound"
+  | "object_3d"
+  | "authorities"
+  | "vocabulary"
+  | "holdings";
+
+export type HoldingRaw = {
+  accession_number: string;
+  attachments: Array<Attachment>;
+  availability: HoldingAvailability;
+  created: string;
+  database: string;
+  id: number;
+  location_d: string;
+  material_type: MaterialType;
+  modified: string;
+  record_id: string;
+  shelf_location: string;
+};
+
+export type Holding = {
+  accession_number: string;
+  attachments: Array<Attachment>;
+  availability: HoldingAvailability;
+  created: Date;
+  database: string;
+  id: number;
+  location_d: string;
+  material_type: MaterialType;
+  modified: Date;
+  record_id: string;
+  shelf_location: string;
+};
+
+export type SubFieldTag =
+  | "a"
+  | "b"
+  | "c"
+  | "d"
+  | "e"
+  | "f"
+  | "g"
+  | "h"
+  | "i"
+  | "j"
+  | "k"
+  | "l"
+  | "m"
+  | "n"
+  | "o"
+  | "p"
+  | "q"
+  | "r"
+  | "s"
+  | "t"
+  | "u"
+  | "v"
+  | "w"
+  | "x"
+  | "y"
+  | "z";
+
+export type MarcFieldValue = Record<
+  SubFieldTag | "ind1" | "ind2",
+  Array<string>
+>;
+
+export type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+export type MarcFieldTag = string;
+
+export type BiblivreMarcJson = Record<MarcFieldTag, Array<MarcFieldValue>>;
+
+export type OpenBiblivreBibliographicRecordRaw = {
+  attachments: Array<Attachment>;
+  author: string;
+  created: string;
+  database: string;
+  fields: Array<FieldRaw>;
+  holdings: Array<HoldingRaw>;
+  holdings_available: number;
+  holdings_count: number;
+  holdings_lent: number;
+  holdings_reserved: number;
+  id: number;
+  json: BiblivreMarcJson;
+  marc: string;
+  material_type: MaterialType;
+  modified: string;
+  publication_year: string;
+  shelf_location: string;
+  subject: string;
+  title: string;
+};
+
+export type Field = FieldRaw;
+
+export type OpenBiblivreBibliographicRecord = {
+  attachments: Array<Attachment>;
+  author: string;
+  created: Date;
+  database: string;
+  fields: Array<FieldRaw>;
+  holdings: Array<HoldingRaw>;
+  holdingsAvailable: number;
+  holdingsCount: number;
+  holdingsLent: number;
+  holdingsReserved: number;
+  id: number;
+  json: BiblivreMarcJson;
+  marc: string;
+  materialType: MaterialType;
+  modified: Date;
+  publicationYear: string;
+  shelfLocation: string;
+  subject: string;
+  title: string;
+};
+
+export type OpenBiblivreBibliographicRecordResultRaw = {
+  data?: OpenBiblivreBibliographicRecordRaw;
+  success: boolean;
+  message_level?: MessageLevel;
+  message?: string;
+};
+
+export type OpenBiblivreBibliographicRecordResult = {
+  data?: OpenBiblivreBibliographicRecord;
+  success: boolean;
+  messageLevel?: MessageLevel;
+  message?: string;
+};
+
+export type MessageLevel = "warning" | "error";

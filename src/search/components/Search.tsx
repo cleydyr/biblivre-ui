@@ -10,7 +10,7 @@ import api from "../api/search";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;
-  query?: string;
+  query: string;
   loading: boolean;
   isAdvancedMode: boolean;
 };
@@ -19,6 +19,7 @@ export function SearchComponent() {
   const initialState: SearchComponentState = {
     loading: false,
     isAdvancedMode: false,
+    query: "",
   };
 
   const [state, setState] = useState(initialState);
@@ -26,9 +27,7 @@ export function SearchComponent() {
   const doSearch = async () => {
     toggleLoadingResults();
 
-    const results = await (query === undefined
-      ? api.listAll()
-      : api.search(query));
+    const results = await (query === "" ? api.listAll() : api.search(query));
 
     setState({
       ...state,
