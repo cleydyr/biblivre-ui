@@ -153,7 +153,7 @@ export type Holding = {
   shelf_location: string;
 };
 
-export type SubFieldTag =
+export type MarcSubfieldTag =
   | "a"
   | "b"
   | "c"
@@ -182,7 +182,7 @@ export type SubFieldTag =
   | "z";
 
 export type MarcFieldValue = Record<
-  SubFieldTag | "ind1" | "ind2",
+  MarcSubfieldTag | "ind1" | "ind2",
   Array<string>
 >;
 
@@ -272,3 +272,30 @@ export type CalloutColor =
   | "warning"
   | "danger"
   | undefined;
+
+export type AutocompleteType =
+  | "disabled"
+  | "previous_values"
+  | "fixed_table"
+  | "fixed_table_with_previous_values"
+  | "biblio"
+  | "authorities"
+  | "vocabulary";
+
+export type FormSubfieldConfig = {
+  subfield: MarcSubfieldTag;
+  datafield: MarcFieldTag;
+  autocompleteType: AutocompleteType;
+  collapsed: boolean;
+  repeatable: boolean;
+  sortOrder: number;
+};
+
+export type FormFieldConfig = {
+  materialType: Array<MaterialType>;
+  datafield: MarcFieldTag;
+  collapsed: boolean;
+  repeatable: boolean;
+  subfields: Array<FormSubfieldConfig>;
+  sortOrder: number;
+};
