@@ -1,6 +1,7 @@
 import {
   EuiCallOut,
   EuiFlexGrid,
+  EuiFlexGroup,
   EuiPagination,
   EuiProgress,
 } from "@elastic/eui";
@@ -42,11 +43,13 @@ const renderSearchResults = (
           />
         ))}
       </EuiFlexGrid>
-      <EuiPagination
-        pageCount={pageCount(recordCount, recordsPerPage)}
-        activePage={page}
-        onPageClick={onPageClick}
-      />
+      <EuiFlexGroup justifyContent="center">
+        <EuiPagination
+          pageCount={pageCount(recordCount, recordsPerPage)}
+          activePage={page}
+          onPageClick={onPageClick}
+        />
+      </EuiFlexGroup>
     </EuiFlexGrid>
   );
 };
