@@ -8,6 +8,7 @@ import {
   EuiImage,
   EuiSkeletonRectangle,
   EuiSkeletonTitle,
+  EuiSpacer,
   EuiText,
 } from "@elastic/eui";
 import { type BiblioRecord } from "../types";
@@ -39,8 +40,6 @@ const RecordSearchResultItem = ({
   const edition = record.json?.["250"]?.[0]?.["a"]?.[0];
 
   const { imageURL, isLoadingCover } = state;
-
-  console.log(isLoading);
 
   useEffect(() => {
     fetch(`https://loremflickr.com/${IMAGE_SIZE}/${IMAGE_SIZE}/book`)
@@ -101,12 +100,15 @@ const RecordSearchResultItem = ({
             <EuiSkeletonTitle isLoading={isLoading}>
               <EuiText>{record.author}</EuiText>
             </EuiSkeletonTitle>
+            <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="s">
               <EuiText size="s">{record.publicationYear}</EuiText>
             </EuiSkeletonTitle>
+            <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="xs">
               <EuiText size="xs">{edition}</EuiText>
             </EuiSkeletonTitle>
+            <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="xs">
               <EuiText size="xs">{record.subject}</EuiText>
             </EuiSkeletonTitle>

@@ -1,16 +1,14 @@
-import { EuiButton, EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
 
 import SearchResults from "./SearchResults";
 
 import { useState } from "react";
-import { BiblivreSearchResult } from "../types";
+import { BiblivreSearchResult, SearchParameters } from "../types";
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
-import noop from "../utils/noop";
 import api from "../api/search";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;
-  query: string;
   loading: boolean;
   isAdvancedMode: boolean;
 };
@@ -19,12 +17,11 @@ export function SearchComponent() {
   const initialState: SearchComponentState = {
     loading: false,
     isAdvancedMode: false,
-    query: "",
   };
 
   const [state, setState] = useState(initialState);
 
-  const doSearch = async () => {
+  const doSearch = async ({ query }: SearchParameters) => {
     toggleLoadingResults();
 
     const results = await (query === "" ? api.listAll() : api.search(query));
@@ -33,13 +30,6 @@ export function SearchComponent() {
       ...state,
       loading: false,
       results,
-    });
-  };
-
-  const onQueryChange = (newQuery: string) => {
-    setState({
-      ...state,
-      query: newQuery,
     });
   };
 
@@ -68,32 +58,20 @@ export function SearchComponent() {
     });
   };
 
-  const { query, loading, results, isAdvancedMode } = state;
+  const { loading, results } = state;
 
   return (
-    <>
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <BibliographicSearchBar
-            query={query}
-            onQueryChange={onQueryChange}
-            isAdvanced={isAdvancedMode}
-            onAdvancedModeChanged={noop}
-          />
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiButton onClick={doSearch}>
-            {query ? "Search" : "List All"}
-          </EuiButton>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-      <div>
+    <EuiFlexGroup direction="column">
+      <EuiFlexItem>
+        <BibliographicSearchBar onSubmit={doSearch} />
+      </EuiFlexItem>
+      <EuiFlexItem>
         <SearchResults
           results={results}
           onPageClick={paginateResults}
           isLoading={loading}
         />
-      </div>
-    </>
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 }

@@ -1,21 +1,31 @@
 import { EuiFieldSearch } from "@elastic/eui";
+import { ReactElement, useState } from "react";
 
 type SimpleBibliographicSearchBarProps = {
-  queryText?: string;
-  onQueryChange: (query: string) => void;
+  onQueryChange: (search: string) => void;
+  onSearch: (search: string) => void;
+  submitButton?: ReactElement;
 };
 
 const SimpleBibliographicSearchBar = (
   props: SimpleBibliographicSearchBarProps
 ) => {
-  const { queryText, onQueryChange } = props;
+  const { onSearch, onQueryChange, submitButton } = props;
+
+  const [query, setQuery] = useState("");
 
   return (
     <EuiFieldSearch
-      value={queryText}
+      append={submitButton}
+      fullWidth={true}
+      value={query}
       onChange={(evt) => {
-        onQueryChange(evt.target.value);
+        const query = evt.target.value;
+
+        setQuery(query);
+        onQueryChange(query);
       }}
+      onSearch={onSearch}
     />
   );
 };

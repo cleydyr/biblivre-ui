@@ -253,3 +253,15 @@ export type OpenBiblivreBibliographicRecordResult = {
 };
 
 export type MessageLevel = "warning" | "error";
+
+export type SimpleSearchParameters = {
+  query: string;
+};
+
+export type AdvancedSearchParameters = {
+  query: string;
+};
+
+export type SearchParameters =
+  | SimpleSearchParameters
+  | AdvancedSearchParameters;

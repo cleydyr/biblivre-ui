@@ -1,33 +1,60 @@
-import { EuiSwitch } from "@elastic/eui";
+import { EuiButton, EuiFlexGroup, EuiFlexItem, EuiSwitch } from "@elastic/eui";
 import noop from "../utils/noop";
 import AdvancedBibliographicSearchBar from "./AdvancedBibliographicSearchBar";
 import SimpleBibliographicSearchBar from "./SimpleBibliographicSearchBar";
+import { SearchParameters } from "../types";
+import { useState } from "react";
 
 type BibliographicSearchBarProps = {
-  query: string;
-  isAdvanced: boolean;
-  onQueryChange: (query: string) => void;
-  onAdvancedModeChanged: (isAdvanced: boolean) => void;
+  onSubmit: (search: SearchParameters) => Promise<void>;
+};
+
+type BibliographicSearchBarState = {
+  isAdvancedMode: boolean;
+  search: SearchParameters;
+};
+
+const initialState: BibliographicSearchBarState = {
+  isAdvancedMode: false,
+  search: {
+    query: "",
+  },
 };
 
 export const BibliographicSearchBar = (props: BibliographicSearchBarProps) => {
-  const { query, isAdvanced, onQueryChange } = props;
+  const { onSubmit } = props;
+
+  const [{ isAdvancedMode, search }, setState] = useState(initialState);
+
+  const onQueryChange = (newSearch: SearchParameters) => {
+    setState({
+      isAdvancedMode,
+      search: newSearch,
+    });
+  };
 
   return (
-    <div>
-      <div>
-        {isAdvanced ? (
+    <EuiFlexGroup alignItems="center">
+      <EuiFlexItem>
+        {isAdvancedMode ? (
           <AdvancedBibliographicSearchBar onQueryChange={onQueryChange} />
         ) : (
           <SimpleBibliographicSearchBar
-            queryText={query}
-            onQueryChange={onQueryChange}
+            onQueryChange={(query: string) => onQueryChange({ query })}
+            onSearch={(query: string) => {
+              onSubmit({ query });
+            }}
+            submitButton={
+              <EuiButton onClick={() => onSubmit(search)}>
+                {search.query ? "Search" : "List All"}
+              </EuiButton>
+            }
           />
         )}
-      </div>
-      <div>
-        <EuiSwitch label="Advanced" checked={isAdvanced} onChange={noop} />
-      </div>
-    </div>
+      </EuiFlexItem>
+      <EuiFlexItem grow={false}>
+        <EuiSwitch label="Advanced" checked={isAdvancedMode} onChange={noop} />
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 };
