@@ -1,10 +1,21 @@
 import { EuiContext, EuiProvider } from "@elastic/eui";
 import "./App.css";
 import "@elastic/eui/dist/eui_theme_light.css";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { SearchComponent } from "./search/components/Search";
 import translations from "./translations/pt_BR";
+import { LibraryData, getLibraryData } from "./library/api";
+import { FormFieldConfig } from "./search/types";
+import searchAPI from "./search/api/search";
+
+const initialState: LibraryData = {
+  title: "",
+  subtitle: "",
+  i18n: {},
+  biblioFields: [],
+  holdingFields: [],
+};
 
 const App = () => {
   const mappings = {
@@ -13,17 +24,27 @@ const App = () => {
     },
   };
 
-  const i18n = {
-    mapping: mappings.pt_br,
-    formatNumber: (value: number) =>
-      new Intl.NumberFormat("pt-BR").format(value),
-  };
+  const [state, setState] = useState(initialState);
 
+  const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
+
+  useEffect(() => {
+    getLibraryData(url).then((data) => {
+      const { title, subtitle, i18n, biblioFields, holdingFields } = data;
+
+      setState({
+        ...state,
+        biblioFields,
+      });
+    });
+  }, []);
+
+  const { title, subtitle, i18n, biblioFields, holdingFields } = state;
   return (
     <EuiProvider colorMode="light">
       <Fragment>
         <EuiContext i18n={i18n}>
-          <SearchComponent />
+          <SearchComponent api={searchAPI(url)} />
         </EuiContext>
       </Fragment>
     </EuiProvider>

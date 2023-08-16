@@ -14,6 +14,7 @@ import {
 } from "../types";
 import RecordSearchResultItem from "./RecordSearchResultItem";
 import { ReactNode } from "react";
+import api, { BibliographicSearchAPI } from "../api/search";
 
 type SearchResultProps = {
   results?: BiblivreSearchResult;
@@ -21,6 +22,7 @@ type SearchResultProps = {
   isLoading: boolean;
   onAddToExport: (record: BiblioRecord) => void;
   onRecordClick: (record?: OpenBiblivreBibliographicRecord) => void;
+  api: BibliographicSearchAPI;
 };
 
 const pageCount = (recordCount: number, recordsPerPage: number): number => {
@@ -32,7 +34,8 @@ const renderSearchResults = (
   isLoading: boolean,
   onPageClick: (page: number) => Promise<void>,
   onAddToExport: (record: BiblioRecord) => void,
-  onRecordClick: (record?: OpenBiblivreBibliographicRecord) => void
+  onRecordClick: (record?: OpenBiblivreBibliographicRecord) => void,
+  api: BibliographicSearchAPI
 ): ReactNode => {
   const { data, recordCount, recordsPerPage, page } = search;
 
@@ -46,6 +49,7 @@ const renderSearchResults = (
             isLoading={isLoading}
             onAddToExport={() => onAddToExport(record)}
             onClick={onRecordClick}
+            api={api}
           />
         ))}
       </EuiFlexGrid>
@@ -77,6 +81,7 @@ const SearchResults = ({
   isLoading,
   onAddToExport,
   onRecordClick,
+  api,
 }: SearchResultProps) => {
   return (
     <EuiFlexGrid>
@@ -87,7 +92,8 @@ const SearchResults = ({
             isLoading,
             onPageClick,
             onAddToExport,
-            onRecordClick
+            onRecordClick,
+            api
           )
         : renderCallout(results)}
     </EuiFlexGrid>

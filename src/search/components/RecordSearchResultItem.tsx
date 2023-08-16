@@ -15,13 +15,14 @@ import {
 } from "@elastic/eui";
 import { OpenBiblivreBibliographicRecord, type BiblioRecord } from "../types";
 import { useEffect, useState } from "react";
-import api from "../api/search";
+import { BibliographicSearchAPI } from "../api/search";
 
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
   isLoading: boolean;
   onClick: (openedRecord?: OpenBiblivreBibliographicRecord) => void;
   onAddToExport: () => void;
+  api: BibliographicSearchAPI;
 };
 
 const IMAGE_SIZE = 320;
@@ -37,6 +38,7 @@ const RecordSearchResultItem = ({
   isLoading,
   onClick,
   onAddToExport,
+  api,
 }: RecordSearchResultItemPropos) => {
   const initialState: RecordSearchResultItemState = {
     imageURL: "",

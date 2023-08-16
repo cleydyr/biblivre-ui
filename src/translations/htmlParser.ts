@@ -21,7 +21,7 @@ export async function fetchAndselect(url: string, paths: any[]) {
     if (Array.isArray(nodes)) {
       const [node] = nodes;
 
-      return node.nodeValue;
+      return node.nodeValue ?? "";
     }
 
     throw new Error(`can't find path ${path}`);

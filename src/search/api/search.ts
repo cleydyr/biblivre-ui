@@ -8,7 +8,7 @@ import {
   toOpenBiblivreBibliographicRecordResult,
 } from "../utils/searchConversionUtils";
 
-type BibliographicSearchAPI = {
+export type BibliographicSearchAPI = {
   listAll: () => Promise<BiblivreSearchResult>;
   search: (query: string) => Promise<BiblivreSearchResult>;
   paginate: (
@@ -19,9 +19,7 @@ type BibliographicSearchAPI = {
   open: (id: number) => Promise<OpenBiblivreBibliographicRecordResult>;
 };
 
-const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
-
-const api: BibliographicSearchAPI = {
+const api = (url: string): BibliographicSearchAPI => ({
   listAll: async () => {
     const responseBody = await fetchJSONFromServer(
       url,
@@ -85,7 +83,7 @@ const api: BibliographicSearchAPI = {
 
     return toOpenBiblivreBibliographicRecordResult(responseBody);
   },
-};
+});
 
 const actions = {
   SEARCH: "search",
@@ -98,14 +96,6 @@ const modules = {
   CATALOGING_BIBLIOGRAPHIC: "cataloging.bibliographic",
   MENU: "menu",
 };
-
-// async function fetchi18n(url: string, i18nPath: string) {
-//   const i18nResponse = await fetch(`${url}/${i18nPath}`);
-
-//   const i18nScript = await i18nResponse.text();
-
-//   return JSON.parse(i18nScript.replace('Translations.translations = ', ''));
-// }
 
 async function fetchJSONFromServer(
   host: string,

@@ -10,8 +10,8 @@ import {
   SearchParameters,
 } from "../types";
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
-import api from "../api/search";
 import { DetailedRecordFlyout } from "./DetailedRecordFlyout";
+import { BibliographicSearchAPI } from "../api/search";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;
@@ -29,7 +29,11 @@ const initialState: SearchComponentState = {
   exportResults: [],
 };
 
-export function SearchComponent() {
+type SearchComponentProps = {
+  api: BibliographicSearchAPI;
+};
+
+export function SearchComponent({ api }: SearchComponentProps) {
   const [state, setState] = useState(initialState);
 
   const doSearch = async ({ query }: SearchParameters) => {
@@ -99,6 +103,7 @@ export function SearchComponent() {
           isLoading={loading}
           onAddToExport={addToExport}
           onRecordClick={setDetailedRecord}
+          api={api}
         />
       </EuiFlexItem>
       {detailedRecord && (
@@ -110,8 +115,3 @@ export function SearchComponent() {
     </EuiFlexGroup>
   );
 }
-
-export type DetailedRecordFlyoutProps = {
-  record: OpenBiblivreBibliographicRecord;
-  onClose: () => void;
-};

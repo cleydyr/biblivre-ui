@@ -1,34 +1,44 @@
 import {
-  EuiBasicTable,
   EuiCodeBlock,
   EuiDescriptionList,
-  EuiFlexGrid,
-  EuiFlexGroup,
-  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
   EuiTab,
   EuiTabs,
-  EuiText,
-  EuiTitle,
   useEuiI18n,
 } from "@elastic/eui";
 import { field } from "../../translations/utils";
-import { useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { OpenBiblivreBibliographicRecord } from "../types";
-import { DetailedRecordFlyoutProps } from "./Search";
+
+type DetailedRecordFlyoutProps = {
+  record: OpenBiblivreBibliographicRecord;
+  onClose: () => void;
+};
+
+type TabId = "brief" | "form" | "marc" | "holdings";
+
+type TabDefinition = {
+  id: TabId;
+  name: string;
+  content: (record: OpenBiblivreBibliographicRecord) => ReactNode;
+};
+
+type DetailedRecordFlyoutState = {
+  selectedTabId: TabId;
+};
 
 export function DetailedRecordFlyout({
   record,
   onClose,
 }: DetailedRecordFlyoutProps) {
-  const initialState = {
+  const initialState: DetailedRecordFlyoutState = {
     selectedTabId: "brief",
   };
 
-  const detailedRecordTabs = [
+  const detailedRecordTabs: Array<TabDefinition> = [
     {
       id: "brief",
       name: useEuiI18n("cataloging.tabs.brief", "Resumo Catalográfico"),

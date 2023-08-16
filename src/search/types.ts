@@ -299,3 +299,21 @@ export type FormFieldConfig = {
   subfields: Array<FormSubfieldConfig>;
   sortOrder: number;
 };
+
+export type FormFieldConfigRaw = {
+  material_type: Array<MaterialType>;
+  datafield: MarcFieldTag;
+  collapsed: boolean;
+  repeatable: boolean;
+  subfields: Array<FormSubfieldConfigRaw>;
+  sortOrder: number;
+};
+
+export type FormSubfieldConfigRaw = {
+  subfield: MarcSubfieldTag;
+  datafield: MarcFieldTag;
+  autocomplete_type: AutocompleteType;
+  collapsed: boolean;
+  repeatable: boolean;
+  sortOrder: number;
+};
