@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   BiblioRecord,
   BiblivreSearchResult,
+  FormFieldConfig,
   OpenBiblivreBibliographicRecord,
   SearchParameters,
 } from "../types";
@@ -31,9 +32,10 @@ const initialState: SearchComponentState = {
 
 type SearchComponentProps = {
   api: BibliographicSearchAPI;
+  biblioFields: Array<FormFieldConfig>;
 };
 
-export function SearchComponent({ api }: SearchComponentProps) {
+export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
   const [state, setState] = useState(initialState);
 
   const doSearch = async ({ query }: SearchParameters) => {
@@ -109,6 +111,7 @@ export function SearchComponent({ api }: SearchComponentProps) {
       {detailedRecord && (
         <DetailedRecordFlyout
           record={detailedRecord}
+          biblioFields={biblioFields}
           onClose={() => setDetailedRecord(undefined)}
         />
       )}

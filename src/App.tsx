@@ -4,10 +4,9 @@ import "@elastic/eui/dist/eui_theme_light.css";
 import { Fragment, useEffect, useState } from "react";
 
 import { SearchComponent } from "./search/components/Search";
-import translations from "./translations/pt_BR";
 import { LibraryData, getLibraryData } from "./library/api";
-import { FormFieldConfig } from "./search/types";
 import searchAPI from "./search/api/search";
+import { I18nShape } from "@elastic/eui/src/components/context/context";
 
 const initialState: LibraryData = {
   title: "",
@@ -18,33 +17,36 @@ const initialState: LibraryData = {
 };
 
 const App = () => {
-  const mappings = {
-    pt_br: {
-      ...translations,
-    },
-  };
-
   const [state, setState] = useState(initialState);
 
-  const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
+  const url = "https://biblioteca.sapiranga.rs.gov.br/";
 
   useEffect(() => {
     getLibraryData(url).then((data) => {
       const { title, subtitle, i18n, biblioFields, holdingFields } = data;
 
       setState({
-        ...state,
+        title,
+        subtitle,
         biblioFields,
+        i18n,
+        holdingFields,
       });
     });
   }, []);
 
-  const { title, subtitle, i18n, biblioFields, holdingFields } = state;
+  const { i18n, biblioFields } = state;
+
+  const mappings: I18nShape = {
+    locale: "pt-br",
+    mapping: i18n,
+  };
+
   return (
     <EuiProvider colorMode="light">
       <Fragment>
-        <EuiContext i18n={i18n}>
-          <SearchComponent api={searchAPI(url)} />
+        <EuiContext i18n={mappings}>
+          <SearchComponent api={searchAPI(url)} biblioFields={biblioFields} />
         </EuiContext>
       </Fragment>
     </EuiProvider>

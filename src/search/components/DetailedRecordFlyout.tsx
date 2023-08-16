@@ -1,20 +1,37 @@
 import {
+  EuiAccordion,
+  EuiBadge,
+  EuiCode,
   EuiCodeBlock,
   EuiDescriptionList,
+  EuiFlexGrid,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
+  EuiI18n,
+  EuiPanel,
+  EuiSpacer,
   EuiTab,
   EuiTabs,
+  EuiText,
+  EuiTitle,
   useEuiI18n,
 } from "@elastic/eui";
 import { field } from "../../translations/utils";
 import { ReactNode, useMemo, useState } from "react";
-import { OpenBiblivreBibliographicRecord } from "../types";
+import {
+  FormFieldConfig,
+  MarcFieldTag,
+  MarcFieldValuePropertyName,
+  OpenBiblivreBibliographicRecord,
+} from "../types";
 
 type DetailedRecordFlyoutProps = {
   record: OpenBiblivreBibliographicRecord;
+  biblioFields: Array<FormFieldConfig>;
   onClose: () => void;
 };
 
@@ -30,8 +47,11 @@ type DetailedRecordFlyoutState = {
   selectedTabId: TabId;
 };
 
+const translationPrefix = "marc.bibliographic.datafield.";
+
 export function DetailedRecordFlyout({
   record,
+  biblioFields,
   onClose,
 }: DetailedRecordFlyoutProps) {
   const initialState: DetailedRecordFlyoutState = {
@@ -54,7 +74,140 @@ export function DetailedRecordFlyout({
     {
       id: "form",
       name: useEuiI18n("cataloging.tabs.form", "Formulário"),
-      content: (detailedRecord: OpenBiblivreBibliographicRecord) => <p>form</p>,
+      content: (detailedRecord: OpenBiblivreBibliographicRecord) => {
+        const tagsToRender = Object.keys(detailedRecord.json)
+          .filter((recordDataField) => {
+            const biblioField = biblioFields.find(
+              ({ datafield }) => datafield === recordDataField
+            );
+
+            if (biblioField === undefined) {
+              return false;
+            }
+
+            return biblioField.subfields.some((subfield) =>
+              detailedRecord.json[recordDataField]?.some(
+                (s) => s[subfield.subfield] !== undefined
+              )
+            );
+          })
+          .sort((a, b) => {
+            const da = biblioFields.find(({ datafield }) => datafield === a);
+
+            const db = biblioFields.find(({ datafield }) => datafield === b);
+
+            if (da === undefined || db === undefined) {
+              return 0;
+            }
+
+            return da.sortOrder - db.sortOrder;
+          });
+
+        const what = tagsToRender
+          .map((tag) => {
+            const values = detailedRecord.json[tag];
+
+            return values.map((value) =>
+              Object.keys(value).map((subfieldOrIndicator) => {
+                const marcSubfieldTag =
+                  subfieldOrIndicator as MarcFieldValuePropertyName;
+
+                const p = value[marcSubfieldTag];
+
+                if (Array.isArray(p)) {
+                  return p.map((v) => ({
+                    datafield: tag,
+                    subfieldOrIndicator: marcSubfieldTag,
+                    value: v,
+                  }));
+                }
+
+                if (p === " ") {
+                  return [];
+                }
+
+                return [
+                  {
+                    datafield: tag,
+                    subfieldOrIndicator: marcSubfieldTag,
+                    value: p,
+                  },
+                ];
+              })
+            );
+          })
+          .flat()
+          .flat()
+          .flat()
+          .sort((a, b) => {
+            if (a.subfieldOrIndicator === "ind1") {
+              return -1;
+            } else if (b.subfieldOrIndicator === "ind1") {
+              return 1;
+            } else if (a.subfieldOrIndicator === "ind2") {
+              return -1;
+            } else if (b.subfieldOrIndicator === "ind2") {
+              return 1;
+            } else {
+              const da = biblioFields.find(
+                ({ datafield }) => datafield === a.datafield
+              );
+
+              const db = biblioFields.find(
+                ({ datafield }) => datafield === b.datafield
+              );
+
+              if (da === undefined || db === undefined) {
+                return 0;
+              }
+
+              const sa = da.subfields.find(
+                ({ subfield }) => subfield === a.subfieldOrIndicator
+              );
+
+              const sb = db.subfields.find(
+                ({ subfield }) => subfield === b.subfieldOrIndicator
+              );
+
+              if (sa === undefined || sb === undefined) {
+                return 0;
+              }
+
+              return sa.sortOrder - sb.sortOrder;
+            }
+          });
+
+        return (
+          <EuiFlexGrid>
+            {tagsToRender.map((recordDatafield) => {
+              const dataFieldConfig = biblioFields.find(
+                (biblioField) => biblioField.datafield === recordDatafield
+              );
+
+              if (dataFieldConfig === undefined) {
+                return <></>;
+              }
+
+              const { collapsed } = dataFieldConfig;
+
+              return (
+                <EuiFlexItem key={recordDatafield}>
+                  <EuiAccordion
+                    id={`${record.id}#${recordDatafield}`}
+                    buttonContent={accordionButtonContent(recordDatafield)}
+                    initialIsOpen={!collapsed}
+                  >
+                    {accordionBody(
+                      what.filter((w) => w.datafield === recordDatafield)
+                    )}
+                  </EuiAccordion>
+                  <EuiSpacer />
+                </EuiFlexItem>
+              );
+            })}
+          </EuiFlexGrid>
+        );
+      },
     },
     {
       id: "marc",
@@ -105,4 +258,90 @@ export function DetailedRecordFlyout({
       <EuiFlyoutFooter></EuiFlyoutFooter>
     </EuiFlyout>
   );
+
+  function accordionButtonContent(recordDatafield: string): ReactNode {
+    return (
+      <EuiFlexGroup justifyContent="spaceEvenly">
+        <EuiFlexItem grow={false}>
+          <EuiBadge>{`${recordDatafield}`}</EuiBadge>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiTitle size="xxs">
+            <EuiText>
+              <EuiI18n
+                token={`${translationPrefix}${recordDatafield}`}
+                default=""
+              />
+            </EuiText>
+          </EuiTitle>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    );
+  }
+
+  function accordionBody(
+    configSubfields: {
+      subfieldOrIndicator: MarcFieldValuePropertyName;
+      datafield: MarcFieldTag;
+      value: string;
+    }[]
+  ) {
+    const listItems = configSubfields.map(
+      ({ datafield, subfieldOrIndicator: subfield, value }) => {
+        const isIndicator = ["ind1", "ind2"].includes(subfield);
+
+        const indicatorOrder = subfield.substring(3);
+
+        return {
+          title: (
+            <EuiFlexGroup justifyContent="flexEnd">
+              <EuiFlexItem grow={false}>
+                <EuiI18n
+                  token={`${translationPrefix}${datafield}.${
+                    isIndicator
+                      ? `indicator.${indicatorOrder}`
+                      : `subfield.${subfield}`
+                  }`}
+                  default=""
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiBadge>
+                  {isIndicator ? `#${indicatorOrder}` : `$${subfield}`}
+                </EuiBadge>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          ),
+          description: (
+            <EuiFlexGroup>
+              <EuiFlexItem>
+                <EuiText size="s">
+                  {isIndicator ? (
+                    <EuiI18n
+                      token={`${translationPrefix}${datafield}.indicator.${indicatorOrder}.${value}`}
+                      default=""
+                    />
+                  ) : (
+                    value
+                  )}
+                </EuiText>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          ),
+        };
+      }
+    );
+
+    return (
+      <EuiPanel>
+        <EuiDescriptionList
+          align="center"
+          gutterSize="s"
+          compressed
+          type="column"
+          listItems={listItems}
+        ></EuiDescriptionList>
+      </EuiPanel>
+    );
+  }
 }

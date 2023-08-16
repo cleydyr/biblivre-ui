@@ -11,7 +11,7 @@ export type LibraryData = {
 
 export async function getLibraryData(url: string): Promise<LibraryData> {
   const [title, subtitle, i18nPath, biblioFieldsPath, holdingFieldsPath] =
-    await fetchAndselect(url, [
+    await fetchAndselect(`${url}?action=search_bibliographic`, [
       "/html/body/form/div[1]/div[2]/h1/a/text()",
       "/html/body/form/div[1]/div[2]/h2/text()",
       "//script[contains(@src, '.i18n.js')]/@src",
@@ -65,5 +65,5 @@ async function fetchScriptData(url: string, path: string) {
 
   const script = await response.text();
 
-  return JSON.parse(script.slice(script.indexOf("=")));
+  return JSON.parse(script.slice(script.indexOf("=") + 1, -1));
 }

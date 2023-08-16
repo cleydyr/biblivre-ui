@@ -80,7 +80,7 @@ const RecordSearchResultItem = ({
             height={IMAGE_SIZE}
           >
             {imageURL === "" ? (
-              <EuiAvatar size="xl" type="space" name={record.author} />
+              <EuiAvatar size="xl" type="space" name={record.author ?? ""} />
             ) : (
               <EuiImage size={IMAGE_SIZE} src={imageURL} alt="capa" />
             )}
