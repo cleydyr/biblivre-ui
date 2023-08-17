@@ -103,7 +103,7 @@ export function DetailedRecordFlyout({
             return da.sortOrder - db.sortOrder;
           });
 
-        const what = tagsToRender
+        const briefFormData = tagsToRender
           .map((tag) => {
             const values = detailedRecord.json[tag];
 
@@ -122,7 +122,7 @@ export function DetailedRecordFlyout({
                   }));
                 }
 
-                if (p === " ") {
+                if (p === " " || p === "" || p === undefined) {
                   return [];
                 }
 
@@ -142,39 +142,45 @@ export function DetailedRecordFlyout({
           .sort((a, b) => {
             if (a.subfieldOrIndicator === "ind1") {
               return -1;
-            } else if (b.subfieldOrIndicator === "ind1") {
-              return 1;
-            } else if (a.subfieldOrIndicator === "ind2") {
-              return -1;
-            } else if (b.subfieldOrIndicator === "ind2") {
-              return 1;
-            } else {
-              const da = biblioFields.find(
-                ({ datafield }) => datafield === a.datafield
-              );
-
-              const db = biblioFields.find(
-                ({ datafield }) => datafield === b.datafield
-              );
-
-              if (da === undefined || db === undefined) {
-                return 0;
-              }
-
-              const sa = da.subfields.find(
-                ({ subfield }) => subfield === a.subfieldOrIndicator
-              );
-
-              const sb = db.subfields.find(
-                ({ subfield }) => subfield === b.subfieldOrIndicator
-              );
-
-              if (sa === undefined || sb === undefined) {
-                return 0;
-              }
-
-              return sa.sortOrder - sb.sortOrder;
             }
+
+            if (b.subfieldOrIndicator === "ind1") {
+              return 1;
+            }
+
+            if (a.subfieldOrIndicator === "ind2") {
+              return -1;
+            }
+
+            if (b.subfieldOrIndicator === "ind2") {
+              return 1;
+            }
+
+            const da = biblioFields.find(
+              ({ datafield }) => datafield === a.datafield
+            );
+
+            const db = biblioFields.find(
+              ({ datafield }) => datafield === b.datafield
+            );
+
+            if (da === undefined || db === undefined) {
+              return 0;
+            }
+
+            const sa = da.subfields.find(
+              ({ subfield }) => subfield === a.subfieldOrIndicator
+            );
+
+            const sb = db.subfields.find(
+              ({ subfield }) => subfield === b.subfieldOrIndicator
+            );
+
+            if (sa === undefined || sb === undefined) {
+              return 0;
+            }
+
+            return sa.sortOrder - sb.sortOrder;
           });
 
         return (
@@ -198,7 +204,9 @@ export function DetailedRecordFlyout({
                     initialIsOpen={!collapsed}
                   >
                     {accordionBody(
-                      what.filter((w) => w.datafield === recordDatafield)
+                      briefFormData.filter(
+                        (w) => w.datafield === recordDatafield
+                      )
                     )}
                   </EuiAccordion>
                   <EuiSpacer />
@@ -240,7 +248,7 @@ export function DetailedRecordFlyout({
   );
 
   return (
-    <EuiFlyout size="l" onClose={onClose}>
+    <EuiFlyout size="m" onClose={onClose}>
       <EuiFlyoutHeader>
         <EuiTabs>
           {detailedRecordTabs.map((tab) => (
@@ -315,7 +323,7 @@ export function DetailedRecordFlyout({
           description: (
             <EuiFlexGroup>
               <EuiFlexItem>
-                <EuiText size="s">
+                <EuiText color="subdued" size="s">
                   {isIndicator ? (
                     <EuiI18n
                       token={`${translationPrefix}${datafield}.indicator.${indicatorOrder}.${value}`}
