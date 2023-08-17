@@ -1,7 +1,6 @@
 import {
   EuiAccordion,
   EuiBadge,
-  EuiCode,
   EuiCodeBlock,
   EuiDescriptionList,
   EuiFlexGrid,
@@ -28,6 +27,12 @@ import {
   MarcFieldValuePropertyName,
   OpenBiblivreBibliographicRecord,
 } from "../types";
+
+type FormSubfieldProps = {
+  subfieldOrIndicator: MarcFieldValuePropertyName;
+  datafield: MarcFieldTag;
+  value: string;
+};
 
 type DetailedRecordFlyoutProps = {
   record: OpenBiblivreBibliographicRecord;
@@ -91,17 +96,7 @@ export function DetailedRecordFlyout({
               )
             );
           })
-          .sort((a, b) => {
-            const da = biblioFields.find(({ datafield }) => datafield === a);
-
-            const db = biblioFields.find(({ datafield }) => datafield === b);
-
-            if (da === undefined || db === undefined) {
-              return 0;
-            }
-
-            return da.sortOrder - db.sortOrder;
-          });
+          .sort(comparingDatafield(biblioFields));
 
         const briefFormData = tagsToRender
           .map((tag) => {
@@ -139,49 +134,7 @@ export function DetailedRecordFlyout({
           .flat()
           .flat()
           .flat()
-          .sort((a, b) => {
-            if (a.subfieldOrIndicator === "ind1") {
-              return -1;
-            }
-
-            if (b.subfieldOrIndicator === "ind1") {
-              return 1;
-            }
-
-            if (a.subfieldOrIndicator === "ind2") {
-              return -1;
-            }
-
-            if (b.subfieldOrIndicator === "ind2") {
-              return 1;
-            }
-
-            const da = biblioFields.find(
-              ({ datafield }) => datafield === a.datafield
-            );
-
-            const db = biblioFields.find(
-              ({ datafield }) => datafield === b.datafield
-            );
-
-            if (da === undefined || db === undefined) {
-              return 0;
-            }
-
-            const sa = da.subfields.find(
-              ({ subfield }) => subfield === a.subfieldOrIndicator
-            );
-
-            const sb = db.subfields.find(
-              ({ subfield }) => subfield === b.subfieldOrIndicator
-            );
-
-            if (sa === undefined || sb === undefined) {
-              return 0;
-            }
-
-            return sa.sortOrder - sb.sortOrder;
-          });
+          .sort(comparingSubfieldsAndIndicators(biblioFields));
 
         return (
           <EuiFlexGrid>
@@ -287,13 +240,7 @@ export function DetailedRecordFlyout({
     );
   }
 
-  function accordionBody(
-    configSubfields: {
-      subfieldOrIndicator: MarcFieldValuePropertyName;
-      datafield: MarcFieldTag;
-      value: string;
-    }[]
-  ) {
+  function accordionBody(configSubfields: FormSubfieldProps[]) {
     const listItems = configSubfields.map(
       ({ datafield, subfieldOrIndicator: subfield, value }) => {
         const isIndicator = ["ind1", "ind2"].includes(subfield);
@@ -352,4 +299,64 @@ export function DetailedRecordFlyout({
       </EuiPanel>
     );
   }
+}
+
+function comparingSubfieldsAndIndicators(
+  biblioFields: FormFieldConfig[]
+): (a: FormSubfieldProps, b: FormSubfieldProps) => number {
+  return (a, b) => {
+    if (a.subfieldOrIndicator === "ind1") {
+      return -1;
+    }
+
+    if (b.subfieldOrIndicator === "ind1") {
+      return 1;
+    }
+
+    if (a.subfieldOrIndicator === "ind2") {
+      return -1;
+    }
+
+    if (b.subfieldOrIndicator === "ind2") {
+      return 1;
+    }
+
+    const [da, db] = [a, b].map((item) =>
+      biblioFields.find(({ datafield }) => datafield === item.datafield)
+    );
+
+    if (da === undefined || db === undefined) {
+      return 0;
+    }
+
+    const sa = da.subfields.find(
+      ({ subfield }) => subfield === a.subfieldOrIndicator
+    );
+
+    const sb = db.subfields.find(
+      ({ subfield }) => subfield === b.subfieldOrIndicator
+    );
+
+    if (sa === undefined || sb === undefined) {
+      return 0;
+    }
+
+    return sa.sortOrder - sb.sortOrder;
+  };
+}
+
+function comparingDatafield(
+  biblioFields: FormFieldConfig[]
+): (a: string, b: string) => number {
+  return (a, b) => {
+    const da = biblioFields.find(({ datafield }) => datafield === a);
+
+    const db = biblioFields.find(({ datafield }) => datafield === b);
+
+    if (da === undefined || db === undefined) {
+      return 0;
+    }
+
+    return da.sortOrder - db.sortOrder;
+  };
 }
