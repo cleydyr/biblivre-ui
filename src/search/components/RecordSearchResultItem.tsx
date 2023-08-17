@@ -1,11 +1,13 @@
 import {
   EuiAvatar,
+  EuiBadge,
   EuiButtonEmpty,
   EuiCard,
   EuiFlexGrid,
   EuiFlexGroup,
   EuiFlexItem,
   EuiHealth,
+  EuiI18n,
   EuiImage,
   EuiSkeletonRectangle,
   EuiSkeletonTitle,
@@ -34,7 +36,16 @@ type RecordSearchResultItemState = {
 };
 
 const RecordSearchResultItem = ({
-  record,
+  record: {
+    id: recordId,
+    holdingsAvailable,
+    title,
+    author,
+    publicationYear,
+    subject,
+    materialType,
+    json,
+  },
   isLoading,
   onClick,
   onAddToExport,
@@ -47,14 +58,14 @@ const RecordSearchResultItem = ({
 
   const [state, setState] = useState(initialState);
 
-  const edition = record.json?.["250"]?.[0]?.["a"]?.[0];
+  const edition = json?.["250"]?.[0]?.["a"]?.[0];
 
   const { imageURL, isLoadingCover, openedRecord } = state;
 
   useEffect(() => {
     Promise.all([
       fetch(`https://loremflickr.com/${IMAGE_SIZE}/${IMAGE_SIZE}/book`),
-      api.open(record.id),
+      api.open(recordId),
     ])
       .then(([response, openedRecord]) =>
         Promise.all([response.blob(), Promise.resolve(openedRecord)])
@@ -67,7 +78,7 @@ const RecordSearchResultItem = ({
           isLoadingCover: false,
         });
       });
-  }, [record.id]);
+  }, [recordId]);
 
   return (
     <EuiCard
@@ -80,7 +91,7 @@ const RecordSearchResultItem = ({
             height={IMAGE_SIZE}
           >
             {imageURL === "" ? (
-              <EuiAvatar size="xl" type="space" name={record.author ?? ""} />
+              <EuiAvatar size="xl" type="space" name={author ?? ""} />
             ) : (
               <EuiImage size={IMAGE_SIZE} src={imageURL} alt="capa" />
             )}
@@ -93,9 +104,16 @@ const RecordSearchResultItem = ({
         ) : (
           <EuiFlexGroup alignItems="flexStart" justifyContent="spaceAround">
             <EuiFlexItem>
-              {record.title.length < 70
-                ? record.title
-                : `${record.title.substring(0, 70)}...`}
+              <span
+                style={{
+                  overflow: "hidden",
+                  WebkitLineClamp: 4,
+                  WebkitBoxOrient: "vertical",
+                  display: "-webkit-box",
+                }}
+              >
+                {title}
+              </span>
             </EuiFlexItem>
           </EuiFlexGroup>
         )
@@ -103,20 +121,19 @@ const RecordSearchResultItem = ({
       titleElement="h4"
       textAlign="left"
       betaBadgeProps={{
-        label: useEuiI18n(`marc.material_type.${record.materialType}`, "Book"),
+        label: useEuiI18n(`marc.material_type.${materialType}`, "Book"),
       }}
       footer={
         <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
           <EuiSkeletonTitle isLoading={isLoading}>
-            {record.holdingsAvailable > 0 ? (
-              <EuiHealth color="success" textSize="xs">
-                Disponível
-              </EuiHealth>
-            ) : (
-              <EuiHealth color="danger" textSize="xs">
-                Indisponível
-              </EuiHealth>
-            )}
+            <EuiBadge color={holdingsAvailable > 0 ? "primary" : "default"}>
+              <EuiI18n
+                token={`cataloging.holding.availability.${
+                  holdingsAvailable > 0 ? "available" : "unavailable"
+                }`}
+                default="?"
+              />
+            </EuiBadge>
           </EuiSkeletonTitle>
           <EuiSkeletonRectangle isLoading={isLoading}>
             <EuiButtonEmpty
@@ -135,11 +152,11 @@ const RecordSearchResultItem = ({
         <EuiFlexGroup>
           <EuiFlexItem>
             <EuiSkeletonTitle isLoading={isLoading}>
-              <EuiText>{record.author}</EuiText>
+              <EuiText>{author}</EuiText>
             </EuiSkeletonTitle>
             <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="s">
-              <EuiText size="s">{record.publicationYear}</EuiText>
+              <EuiText size="s">{publicationYear}</EuiText>
             </EuiSkeletonTitle>
             <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="xs">
@@ -147,7 +164,7 @@ const RecordSearchResultItem = ({
             </EuiSkeletonTitle>
             <EuiSpacer size="xs" />
             <EuiSkeletonTitle isLoading={isLoading} size="xs">
-              <EuiText size="xs">{record.subject}</EuiText>
+              <EuiText size="xs">{subject}</EuiText>
             </EuiSkeletonTitle>
           </EuiFlexItem>
         </EuiFlexGroup>

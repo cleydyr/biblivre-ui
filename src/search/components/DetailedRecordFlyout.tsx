@@ -1,6 +1,8 @@
 import {
   EuiAccordion,
   EuiBadge,
+  EuiBasicTable,
+  EuiCard,
   EuiCodeBlock,
   EuiDescriptionList,
   EuiFlexGrid,
@@ -10,7 +12,9 @@ import {
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
+  EuiHealth,
   EuiI18n,
+  EuiNotificationBadge,
   EuiPanel,
   EuiSpacer,
   EuiTab,
@@ -23,20 +27,23 @@ import { field } from "../../translations/utils";
 import { ReactNode, useMemo, useState } from "react";
 import {
   FormFieldConfig,
+  HoldingAvailability,
+  HoldingRaw,
+  MarcFieldIndicator,
   MarcFieldTag,
-  MarcFieldValuePropertyName,
+  MarcFormFieldConfigPropertyName,
   OpenBiblivreBibliographicRecord,
 } from "../types";
 
 type FormSubfieldProps = {
-  subfieldOrIndicator: MarcFieldValuePropertyName;
+  subfieldOrIndicator: MarcFormFieldConfigPropertyName;
   datafield: MarcFieldTag;
   value: string;
 };
 
 type DetailedRecordFlyoutProps = {
   record: OpenBiblivreBibliographicRecord;
-  biblioFields: Array<FormFieldConfig>;
+  biblioFormFieldsConfig: Array<FormFieldConfig>;
   onClose: () => void;
 };
 
@@ -45,6 +52,7 @@ type TabId = "brief" | "form" | "marc" | "holdings";
 type TabDefinition = {
   id: TabId;
   name: string;
+  append?: ReactNode;
   content: (record: OpenBiblivreBibliographicRecord) => ReactNode;
 };
 
@@ -56,20 +64,62 @@ const translationPrefix = "marc.bibliographic.datafield.";
 
 export function DetailedRecordFlyout({
   record,
-  biblioFields,
+  biblioFormFieldsConfig,
   onClose,
 }: DetailedRecordFlyoutProps) {
   const initialState: DetailedRecordFlyoutState = {
-    selectedTabId: "brief",
+    selectedTabId: "holdings",
   };
 
   const detailedRecordTabs: Array<TabDefinition> = [
     {
+      id: "holdings",
+      name: useEuiI18n("cataloging.tabs.holdings", "Exemplares"),
+      append: (
+        <EuiNotificationBadge color="subdued">
+          {record.holdingsCount}
+        </EuiNotificationBadge>
+      ),
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => {
+        const columns = ["accession_number", "shelf_location"].map(
+          (property) => ({
+            field: property,
+            name: <EuiI18n token={`search.holding.${property}`} default="?" />,
+          })
+        );
+
+        const identifierColumn = {
+          field: "id",
+          name: "ID",
+        };
+
+        const availabilityColumn = {
+          name: <EuiI18n token="search.holding.availability" default="?" />,
+          render: ({ availability }: HoldingRaw) => (
+            <EuiHealth color={availabilityColors[availability]}>
+              {" "}
+              <EuiI18n
+                token={`cataloging.holding.availability.${availability}`}
+                default="?"
+              />
+            </EuiHealth>
+          ),
+        };
+
+        return (
+          <EuiBasicTable
+            items={openedRecord.holdings}
+            columns={[identifierColumn, ...columns, availabilityColumn]}
+          />
+        );
+      },
+    },
+    {
       id: "brief",
       name: useEuiI18n("cataloging.tabs.brief", "Resumo Catalográfico"),
-      content: (detailedRecord: OpenBiblivreBibliographicRecord) => (
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => (
         <EuiDescriptionList
-          listItems={detailedRecord.fields.map(({ value, datafield }) => ({
+          listItems={openedRecord.fields.map(({ value, datafield }) => ({
             title: field(datafield, ""),
             description: value,
           }))}
@@ -79,67 +129,51 @@ export function DetailedRecordFlyout({
     {
       id: "form",
       name: useEuiI18n("cataloging.tabs.form", "Formulário"),
-      content: (detailedRecord: OpenBiblivreBibliographicRecord) => {
-        const tagsToRender = Object.keys(detailedRecord.json)
-          .filter((recordDataField) => {
-            const biblioField = biblioFields.find(
-              ({ datafield }) => datafield === recordDataField
-            );
-
-            if (biblioField === undefined) {
-              return false;
-            }
-
-            return biblioField.subfields.some((subfield) =>
-              detailedRecord.json[recordDataField]?.some(
-                (s) => s[subfield.subfield] !== undefined
-              )
-            );
-          })
-          .sort(comparingDatafield(biblioFields));
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => {
+        const tagsToRender = filterTagsToRender(openedRecord);
 
         const briefFormData = tagsToRender
           .map((tag) => {
-            const values = detailedRecord.json[tag];
+            const marcFieldValues = openedRecord.json[tag];
 
-            return values.map((value) =>
-              Object.keys(value).map((subfieldOrIndicator) => {
+            return marcFieldValues.map((marcFieldValue) =>
+              Object.keys(marcFieldValue).map((subfieldOrIndicator) => {
                 const marcSubfieldTag =
-                  subfieldOrIndicator as MarcFieldValuePropertyName;
+                  subfieldOrIndicator as MarcFormFieldConfigPropertyName;
 
-                const p = value[marcSubfieldTag];
+                const subfieldValue = marcFieldValue[marcSubfieldTag];
 
-                if (Array.isArray(p)) {
-                  return p.map((v) => ({
+                if (Array.isArray(subfieldValue)) {
+                  return subfieldValue.map((v) => ({
                     datafield: tag,
                     subfieldOrIndicator: marcSubfieldTag,
                     value: v,
                   }));
                 }
 
-                if (p === " " || p === "" || p === undefined) {
-                  return [];
+                if (subfieldValue?.trim()?.length > 0) {
+                  return [
+                    {
+                      datafield: tag,
+                      subfieldOrIndicator: marcSubfieldTag,
+                      value: subfieldValue,
+                    },
+                  ];
                 }
 
-                return [
-                  {
-                    datafield: tag,
-                    subfieldOrIndicator: marcSubfieldTag,
-                    value: p,
-                  },
-                ];
+                return [];
               })
             );
           })
           .flat()
           .flat()
           .flat()
-          .sort(comparingSubfieldsAndIndicators(biblioFields));
+          .sort(comparingSubfieldsAndIndicators(biblioFormFieldsConfig));
 
         return (
           <EuiFlexGrid>
             {tagsToRender.map((recordDatafield) => {
-              const dataFieldConfig = biblioFields.find(
+              const dataFieldConfig = biblioFormFieldsConfig.find(
                 (biblioField) => biblioField.datafield === recordDatafield
               );
 
@@ -173,17 +207,10 @@ export function DetailedRecordFlyout({
     {
       id: "marc",
       name: useEuiI18n("cataloging.tabs.marc", "MARC 21"),
-      content: (detailedRecord: OpenBiblivreBibliographicRecord) => (
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => (
         <EuiCodeBlock isCopyable overflowHeight={960}>
-          {detailedRecord.marc}
+          {openedRecord.marc}
         </EuiCodeBlock>
-      ),
-    },
-    {
-      id: "holdings",
-      name: useEuiI18n("cataloging.tabs.holdings", "Exemplares"),
-      content: (detailedRecord: OpenBiblivreBibliographicRecord) => (
-        <p>holdings</p>
       ),
     },
   ];
@@ -209,6 +236,7 @@ export function DetailedRecordFlyout({
               key={tab.id}
               isSelected={tab.id === selectedTabId}
               onClick={() => setState({ selectedTabId: tab.id })}
+              append={tab.append}
             >
               {tab.name}
             </EuiTab>
@@ -219,6 +247,24 @@ export function DetailedRecordFlyout({
       <EuiFlyoutFooter></EuiFlyoutFooter>
     </EuiFlyout>
   );
+
+  function filterTagsToRender(
+    record: OpenBiblivreBibliographicRecord
+  ): MarcFieldTag[] {
+    return Object.keys(record.json)
+      .filter((recordDatafield) => {
+        const biblioFormFieldConfig = biblioFormFieldsConfig.find(
+          ({ datafield }) => datafield === recordDatafield
+        );
+
+        return biblioFormFieldConfig?.subfields.some(({ subfield }) =>
+          record.json[recordDatafield].some(
+            (recordSubfield) => recordSubfield[subfield] !== undefined
+          )
+        );
+      })
+      .sort(comparingDatafield(biblioFormFieldsConfig));
+  }
 
   function accordionButtonContent(recordDatafield: string): ReactNode {
     return (
@@ -243,7 +289,7 @@ export function DetailedRecordFlyout({
   function accordionBody(configSubfields: FormSubfieldProps[]) {
     const listItems = configSubfields.map(
       ({ datafield, subfieldOrIndicator: subfield, value }) => {
-        const isIndicator = ["ind1", "ind2"].includes(subfield);
+        const isIndicator = _isIndicator(subfield);
 
         const indicatorOrder = subfield.substring(3);
 
@@ -299,6 +345,51 @@ export function DetailedRecordFlyout({
       </EuiPanel>
     );
   }
+}
+
+function holdingsCountSummary(
+  openedRecord: OpenBiblivreBibliographicRecord
+): ReactNode {
+  return (
+    <EuiDescriptionList
+      gutterSize="s"
+      compressed
+      type="column"
+      listItems={[
+        {
+          title: (
+            <EuiI18n
+              token="search.bibliographic.holdings_available"
+              default="Disponíveis"
+            />
+          ),
+          description: openedRecord.holdingsAvailable,
+        },
+        {
+          title: (
+            <EuiI18n
+              token="search.bibliographic.holdings_lent"
+              default="Emprestados"
+            />
+          ),
+          description: openedRecord.holdingsLent,
+        },
+        {
+          title: (
+            <EuiI18n
+              token="search.bibliographic.holdings_reserved"
+              default="Reservados"
+            />
+          ),
+          description: openedRecord.holdingsReserved,
+        },
+      ]}
+    />
+  );
+}
+
+function _isIndicator(subfield: string): subfield is MarcFieldIndicator {
+  return ["ind1", "ind2"].includes(subfield);
 }
 
 function comparingSubfieldsAndIndicators(
@@ -360,3 +451,8 @@ function comparingDatafield(
     return da.sortOrder - db.sortOrder;
   };
 }
+
+const availabilityColors: Record<HoldingAvailability, string> = {
+  available: "success",
+  unavailable: "subdued",
+};

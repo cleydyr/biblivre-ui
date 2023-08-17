@@ -181,10 +181,14 @@ export type MarcSubfieldTag =
   | "y"
   | "z";
 
-export type MarcFieldValuePropertyName = MarcSubfieldTag | "ind1" | "ind2";
+export type MarcFieldIndicator = "ind1" | "ind2";
+
+export type MarcFormFieldConfigPropertyName =
+  | MarcSubfieldTag
+  | MarcFieldIndicator;
 
 export type MarcFieldValue = Record<
-  MarcFieldValuePropertyName,
+  MarcFormFieldConfigPropertyName,
   Array<string> | string
 >;
 

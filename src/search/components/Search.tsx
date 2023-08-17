@@ -111,7 +111,7 @@ export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
       {detailedRecord && (
         <DetailedRecordFlyout
           record={detailedRecord}
-          biblioFields={biblioFields}
+          biblioFormFieldsConfig={biblioFields}
           onClose={() => setDetailedRecord(undefined)}
         />
       )}
