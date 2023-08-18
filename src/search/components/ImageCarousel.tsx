@@ -98,7 +98,10 @@ function carouselNavigation(
     <EuiFlexGroup
       justifyContent="center"
       alignItems="center"
-      style={{ visibility: images.length === 1 ? "hidden" : "visible" }}
+      style={{
+        visibility: images.length === 1 ? "hidden" : "visible",
+        background: "transparent",
+      }}
     >
       <EuiFlexItem grow={false}>
         <EuiButtonIcon

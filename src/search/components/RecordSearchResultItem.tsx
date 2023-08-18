@@ -7,7 +7,6 @@ import {
   EuiFlexItem,
   EuiI18n,
   EuiIcon,
-  EuiPanel,
   EuiSkeletonRectangle,
   EuiSkeletonTitle,
   EuiSpacer,
@@ -33,7 +32,6 @@ const IMAGE_SIZE = 320;
 type RecordSearchResultItemState = {
   isLoadingCover: boolean;
   openedRecord?: OpenBiblivreBibliographicRecord;
-  isImageError?: boolean;
 };
 
 const RecordSearchResultItem = ({
@@ -60,7 +58,7 @@ const RecordSearchResultItem = ({
 
   const edition = json?.["250"]?.[0]?.["a"]?.[0];
 
-  const { isLoadingCover, openedRecord, isImageError } = state;
+  const { isLoadingCover, openedRecord } = state;
 
   const backgroundColorCSS = useEuiBackgroundColor("subdued");
 
@@ -95,10 +93,10 @@ const RecordSearchResultItem = ({
                 imageUrls={openedRecord.attachments.map(({ uri }) =>
                   api.attachmentURL(uri)
                 )}
-                errorPlaceHolder={imagePlaceholder(backgroundColorCSS)}
+                errorPlaceHolder={imagePlaceholder()}
               />
             ) : (
-              imagePlaceholder(backgroundColorCSS)
+              imagePlaceholder()
             )}
           </EuiSkeletonRectangle>
         </EuiFlexGroup>
@@ -178,7 +176,7 @@ const RecordSearchResultItem = ({
 
 export default RecordSearchResultItem;
 
-function imagePlaceholder(backgroundColorCSS: string) {
+function imagePlaceholder() {
   return (
     <EuiFlexGroup
       style={{ height: 320 }}
