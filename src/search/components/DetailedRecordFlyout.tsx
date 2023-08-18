@@ -2,7 +2,6 @@ import {
   EuiAccordion,
   EuiBadge,
   EuiBasicTable,
-  EuiCard,
   EuiCodeBlock,
   EuiDescriptionList,
   EuiFlexGrid,
@@ -133,11 +132,11 @@ export function DetailedRecordFlyout({
         const tagsToRender = filterTagsToRender(openedRecord);
 
         const briefFormData = tagsToRender
-          .map((tag) => {
+          .flatMap((tag) => {
             const marcFieldValues = openedRecord.json[tag];
 
-            return marcFieldValues.map((marcFieldValue) =>
-              Object.keys(marcFieldValue).map((subfieldOrIndicator) => {
+            return marcFieldValues.flatMap((marcFieldValue) =>
+              Object.keys(marcFieldValue).flatMap((subfieldOrIndicator) => {
                 const marcSubfieldTag =
                   subfieldOrIndicator as MarcFormFieldConfigPropertyName;
 
@@ -165,9 +164,6 @@ export function DetailedRecordFlyout({
               })
             );
           })
-          .flat()
-          .flat()
-          .flat()
           .sort(comparingSubfieldsAndIndicators(biblioFormFieldsConfig));
 
         return (
