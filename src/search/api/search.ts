@@ -17,6 +17,7 @@ export type BibliographicSearchAPI = {
     indexingGroup: number
   ) => Promise<BiblivreSearchResult>;
   open: (id: number) => Promise<OpenBiblivreBibliographicRecordResult>;
+  attachmentURL: (uri: string) => string;
 };
 
 const api = (url: string): BibliographicSearchAPI => ({
@@ -83,6 +84,8 @@ const api = (url: string): BibliographicSearchAPI => ({
 
     return toOpenBiblivreBibliographicRecordResult(responseBody);
   },
+
+  attachmentURL: (uri: string) => `${url}/${uri}`,
 });
 
 const actions = {
