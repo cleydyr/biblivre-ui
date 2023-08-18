@@ -92,24 +92,16 @@ export function DetailedRecordFlyout({
           name: "ID",
         };
 
-        const availabilityColumn = {
-          name: <EuiI18n token="search.holding.availability" default="?" />,
-          render: ({ availability }: HoldingRaw) => (
-            <EuiHealth color={availabilityColors[availability]}>
-              {" "}
-              <EuiI18n
-                token={`cataloging.holding.availability.${availability}`}
-                default="?"
-              />
-            </EuiHealth>
-          ),
-        };
-
         return (
-          <EuiBasicTable
-            items={openedRecord.holdings}
-            columns={[identifierColumn, ...columns, availabilityColumn]}
-          />
+          <EuiFlexGrid>
+            <EuiBasicTable
+              items={openedRecord.holdings.filter(
+                (holding) => holding.availability === "available"
+              )}
+              columns={[identifierColumn, ...columns]}
+            />
+            {holdingsCountSummary(openedRecord)}
+          </EuiFlexGrid>
         );
       },
     },
@@ -447,8 +439,3 @@ function comparingDatafield(
     return da.sortOrder - db.sortOrder;
   };
 }
-
-const availabilityColors: Record<HoldingAvailability, string> = {
-  available: "success",
-  unavailable: "subdued",
-};
