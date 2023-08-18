@@ -113,6 +113,7 @@ export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
           record={detailedRecord}
           biblioFormFieldsConfig={biblioFields}
           onClose={() => setDetailedRecord(undefined)}
+          api={api}
         />
       )}
     </EuiFlexGroup>

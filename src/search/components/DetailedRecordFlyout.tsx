@@ -12,7 +12,10 @@ import {
   EuiFlyoutFooter,
   EuiFlyoutHeader,
   EuiHealth,
+  EuiHorizontalRule,
   EuiI18n,
+  EuiListGroup,
+  EuiListGroupItem,
   EuiNotificationBadge,
   EuiPanel,
   EuiSpacer,
@@ -26,13 +29,13 @@ import { field } from "../../translations/utils";
 import { ReactNode, useMemo, useState } from "react";
 import {
   FormFieldConfig,
-  HoldingAvailability,
-  HoldingRaw,
   MarcFieldIndicator,
   MarcFieldTag,
   MarcFormFieldConfigPropertyName,
   OpenBiblivreBibliographicRecord,
 } from "../types";
+import { BibliographicSearchAPI } from "../api/search";
+import { icon } from "@elastic/eui/src/components/icon/assets/empty";
 
 type FormSubfieldProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;
@@ -44,9 +47,10 @@ type DetailedRecordFlyoutProps = {
   record: OpenBiblivreBibliographicRecord;
   biblioFormFieldsConfig: Array<FormFieldConfig>;
   onClose: () => void;
+  api: BibliographicSearchAPI;
 };
 
-type TabId = "brief" | "form" | "marc" | "holdings";
+type TabId = "brief" | "form" | "marc" | "holdings" | "media";
 
 type TabDefinition = {
   id: TabId;
@@ -65,6 +69,7 @@ export function DetailedRecordFlyout({
   record,
   biblioFormFieldsConfig,
   onClose,
+  api,
 }: DetailedRecordFlyoutProps) {
   const initialState: DetailedRecordFlyoutState = {
     selectedTabId: "holdings",
@@ -93,15 +98,15 @@ export function DetailedRecordFlyout({
         };
 
         return (
-          <EuiFlexGrid>
+          <EuiFlexGroup direction="column">
+            {holdingsCountSummary(openedRecord)}
             <EuiBasicTable
               items={openedRecord.holdings.filter(
                 (holding) => holding.availability === "available"
               )}
               columns={[identifierColumn, ...columns]}
             />
-            {holdingsCountSummary(openedRecord)}
-          </EuiFlexGrid>
+          </EuiFlexGroup>
         );
       },
     },
@@ -194,11 +199,25 @@ export function DetailedRecordFlyout({
     },
     {
       id: "marc",
-      name: useEuiI18n("cataloging.tabs.marc", "MARC 21"),
+      name: useEuiI18n("cataloging.tabs.marc", "MARC"),
       content: (openedRecord: OpenBiblivreBibliographicRecord) => (
         <EuiCodeBlock isCopyable overflowHeight={960}>
           {openedRecord.marc}
         </EuiCodeBlock>
+      ),
+    },
+    {
+      id: "media",
+      name: useEuiI18n("cataloging.common.digital_files", "Arquivos digitais"),
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => (
+        <EuiListGroup
+          color="primary"
+          listItems={openedRecord.attachments.map((attachment) => ({
+            label: attachment.name,
+            href: api.attachmentURL(attachment.uri),
+            iconType: "download",
+          }))}
+        />
       ),
     },
   ];
@@ -342,7 +361,7 @@ function holdingsCountSummary(
     <EuiDescriptionList
       gutterSize="s"
       compressed
-      type="column"
+      type="responsiveColumn"
       listItems={[
         {
           title: (

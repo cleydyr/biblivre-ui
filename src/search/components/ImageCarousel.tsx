@@ -4,15 +4,21 @@ import {
   EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiHealth,
+  EuiIcon,
   EuiImage,
 } from "@elastic/eui";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 type ImageCarouselProps = {
   imageUrls: Array<string>;
+  width?: number;
   height?: number;
-  onError: () => void;
+  errorPlaceHolder: ReactNode;
+};
+
+type ImageCarouselState = {
+  imageIndex: number;
+  isError: boolean;
 };
 
 const calculateDotIndex = (imageIndex: number, imagesLength: number) => {
@@ -23,29 +29,53 @@ const calculateDotIndex = (imageIndex: number, imagesLength: number) => {
   return Math.floor(imageIndex / (imagesLength / 5));
 };
 
-const ImageCarousel = ({ imageUrls, height, onError }: ImageCarouselProps) => {
-  const [imageIndex, setImageIndex] = useState(0);
+const initialState: ImageCarouselState = {
+  imageIndex: 0,
+  isError: false,
+};
+
+const ImageCarousel = ({
+  imageUrls,
+  width,
+  height,
+  errorPlaceHolder,
+}: ImageCarouselProps) => {
+  const [state, setState] = useState(initialState);
+
+  const { imageIndex, isError } = state;
 
   const decreaseImageIndex = () => {
-    setImageIndex((imageIndex - 1 + imageUrls.length) % imageUrls.length);
+    setState({
+      isError: false,
+      imageIndex: (imageIndex - 1 + imageUrls.length) % imageUrls.length,
+    });
   };
 
   const increaseImageIndex = () => {
-    setImageIndex((imageIndex + 1) % imageUrls.length);
+    setState({
+      isError: false,
+      imageIndex: (imageIndex + 1) % imageUrls.length,
+    });
   };
 
   return (
     <EuiFlexGroup justifyContent="center" direction="column" gutterSize="xs">
       <EuiFlexItem>
-        <EuiImage
-          height={height}
-          src={imageUrls[imageIndex]}
-          alt={`${imageIndex}`}
-          onError={onError}
-        />
+        {isError ? (
+          errorPlaceHolder
+        ) : (
+          <EuiImage
+            height={height}
+            width={width}
+            style={{ objectFit: "scale-down" }}
+            src={imageUrls[imageIndex]}
+            alt={`${imageIndex}`}
+            onError={() => setState({ ...state, isError: true })}
+          />
+        )}
       </EuiFlexItem>
       <EuiFlexItem>
-        {carouselController(
+        {carouselNavigation(
           imageUrls,
           imageIndex,
           decreaseImageIndex,
@@ -57,7 +87,8 @@ const ImageCarousel = ({ imageUrls, height, onError }: ImageCarouselProps) => {
 };
 
 export default ImageCarousel;
-function carouselController(
+
+function carouselNavigation(
   images: string[],
   imageIndex: number,
   decreaseImageIndex: () => void,
@@ -67,7 +98,7 @@ function carouselController(
     <EuiFlexGroup
       justifyContent="center"
       alignItems="center"
-      style={{ visibility: images.length === 0 ? "hidden" : "visible" }}
+      style={{ visibility: images.length === 1 ? "hidden" : "visible" }}
     >
       <EuiFlexItem grow={false}>
         <EuiButtonIcon
@@ -77,19 +108,8 @@ function carouselController(
         />
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
-        <EuiFlexGroup>
-          {Array(Math.min(5, images.length))
-            .fill(0)
-            .map((_, i) => (
-              <EuiHealth
-                key={i}
-                color={
-                  i === calculateDotIndex(imageIndex, images.length)
-                    ? "primary"
-                    : "subdued"
-                }
-              />
-            ))}
+        <EuiFlexGroup alignItems="center">
+          {renderDots(imageIndex, images.length)}
         </EuiFlexGroup>
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
@@ -101,4 +121,20 @@ function carouselController(
       </EuiFlexItem>
     </EuiFlexGroup>
   );
+}
+function renderDots(imageIndex: number, imagesLength: number): ReactNode {
+  return Array(Math.min(5, imagesLength))
+    .fill(0)
+    .map((_, i) => {
+      const isCurrent = i === calculateDotIndex(imageIndex, imagesLength);
+
+      return (
+        <EuiIcon
+          key={i}
+          size={isCurrent ? "m" : "s"}
+          type={"dot"}
+          color={isCurrent ? "primary" : "subdued"}
+        />
+      );
+    });
 }

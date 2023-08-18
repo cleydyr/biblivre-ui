@@ -19,7 +19,7 @@ const initialState: LibraryData = {
 const App = () => {
   const [state, setState] = useState(initialState);
 
-  const url = "https://biblioteca.sapiranga.rs.gov.br/";
+  const url = "http://localhost/";
 
   useEffect(() => {
     getLibraryData(url).then((data) => {
