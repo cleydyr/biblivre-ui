@@ -11,11 +11,8 @@ import {
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
-  EuiHealth,
-  EuiHorizontalRule,
   EuiI18n,
   EuiListGroup,
-  EuiListGroupItem,
   EuiNotificationBadge,
   EuiPanel,
   EuiSpacer,
@@ -35,7 +32,6 @@ import {
   OpenBiblivreBibliographicRecord,
 } from "../types";
 import { BibliographicSearchAPI } from "../api/search";
-import { icon } from "@elastic/eui/src/components/icon/assets/empty";
 
 type FormSubfieldProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;
@@ -105,6 +101,12 @@ export function DetailedRecordFlyout({
                 (holding) => holding.availability === "available"
               )}
               columns={[identifierColumn, ...columns]}
+              noItemsMessage={
+                <EuiI18n
+                  token="circulation.lending.no_holding_found"
+                  default="Nenhum exemplar encontrado"
+                />
+              }
             />
           </EuiFlexGroup>
         );
@@ -209,16 +211,36 @@ export function DetailedRecordFlyout({
     {
       id: "media",
       name: useEuiI18n("cataloging.common.digital_files", "Arquivos digitais"),
-      content: (openedRecord: OpenBiblivreBibliographicRecord) => (
-        <EuiListGroup
-          color="primary"
-          listItems={openedRecord.attachments.map((attachment) => ({
-            label: attachment.name,
-            href: api.attachmentURL(attachment.uri),
-            iconType: "download",
-          }))}
-        />
+      append: (
+        <EuiNotificationBadge color="subdued">
+          {record.attachments.length}
+        </EuiNotificationBadge>
       ),
+      content: (openedRecord: OpenBiblivreBibliographicRecord) => {
+        if (openedRecord.attachments.length === 0) {
+          return (
+            <EuiTitle size="xxs">
+              <EuiText>
+                <EuiI18n
+                  token="cataloging.bibliographic.no_attachments"
+                  default=""
+                />
+              </EuiText>
+            </EuiTitle>
+          );
+        }
+
+        return (
+          <EuiListGroup
+            color="primary"
+            listItems={openedRecord.attachments.map((attachment) => ({
+              label: attachment.name,
+              href: api.attachmentURL(attachment.uri),
+              iconType: "download",
+            }))}
+          />
+        );
+      },
     },
   ];
 

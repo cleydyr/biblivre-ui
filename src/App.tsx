@@ -1,4 +1,4 @@
-import { EuiContext, EuiProvider } from "@elastic/eui";
+import { EuiBottomBar, EuiContext, EuiProvider, EuiSwitch } from "@elastic/eui";
 import "./App.css";
 import "@elastic/eui/dist/eui_theme_light.css";
 import { Fragment, useEffect, useState } from "react";
@@ -8,12 +8,20 @@ import { LibraryData, getLibraryData } from "./library/api";
 import searchAPI from "./search/api/search";
 import { I18nShape } from "@elastic/eui/src/components/context/context";
 
-const initialState: LibraryData = {
-  title: "",
-  subtitle: "",
-  i18n: {},
-  biblioFields: [],
-  holdingFields: [],
+type AppState = {
+  colorMode: "light" | "dark";
+  libraryData: LibraryData;
+};
+
+const initialState: AppState = {
+  libraryData: {
+    title: "",
+    subtitle: "",
+    i18n: {},
+    biblioFields: [],
+    holdingFields: [],
+  },
+  colorMode: "light",
 };
 
 const App = () => {
@@ -26,16 +34,29 @@ const App = () => {
       const { title, subtitle, i18n, biblioFields, holdingFields } = data;
 
       setState({
-        title,
-        subtitle,
-        biblioFields,
-        i18n,
-        holdingFields,
+        ...state,
+        libraryData: {
+          title,
+          subtitle,
+          biblioFields,
+          i18n,
+          holdingFields,
+        },
       });
     });
   }, []);
 
-  const { i18n, biblioFields } = state;
+  const toggleTheme = () => {
+    setState({
+      ...state,
+      colorMode: state.colorMode === "light" ? "dark" : "light",
+    });
+  };
+
+  const {
+    libraryData: { i18n, biblioFields },
+    colorMode,
+  } = state;
 
   const mappings: I18nShape = {
     locale: "pt-br",
@@ -43,10 +64,17 @@ const App = () => {
   };
 
   return (
-    <EuiProvider colorMode="light">
+    <EuiProvider colorMode={colorMode}>
       <Fragment>
         <EuiContext i18n={mappings}>
           <SearchComponent api={searchAPI(url)} biblioFields={biblioFields} />
+          <EuiBottomBar>
+            <EuiSwitch
+              onChange={toggleTheme}
+              checked={colorMode === "dark"}
+              label="Dark Mode"
+            ></EuiSwitch>
+          </EuiBottomBar>
         </EuiContext>
       </Fragment>
     </EuiProvider>

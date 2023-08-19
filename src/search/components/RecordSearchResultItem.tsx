@@ -60,7 +60,7 @@ const RecordSearchResultItem = ({
 
   const { isLoadingCover, openedRecord } = state;
 
-  const backgroundColorCSS = useEuiBackgroundColor("subdued");
+  const subduedBackground = useEuiBackgroundColor("subdued");
 
   useEffect(() => {
     async function openRecord() {
@@ -78,27 +78,22 @@ const RecordSearchResultItem = ({
 
   return (
     <EuiCard
-      // onClick={() => onClick(openedRecord)}
       image={
         <EuiFlexGroup justifyContent="center" alignItems="center">
-          <EuiSkeletonRectangle
-            isLoading={isLoadingCover || isLoading}
-            width={IMAGE_SIZE}
-            height={IMAGE_SIZE}
-          >
-            {hasAttachments(openedRecord) ? (
-              <ImageCarousel
-                width={IMAGE_SIZE}
-                height={IMAGE_SIZE}
-                imageUrls={openedRecord.attachments.map(({ uri }) =>
-                  api.attachmentURL(uri)
-                )}
-                errorPlaceHolder={imagePlaceholder()}
-              />
-            ) : (
-              imagePlaceholder()
-            )}
-          </EuiSkeletonRectangle>
+          {/* <EuiSkeletonRectangle isLoading={isLoadingCover || isLoading}> */}
+          {hasAttachments(openedRecord) ? (
+            <ImageCarousel
+              width={IMAGE_SIZE}
+              height={IMAGE_SIZE}
+              imageUrls={openedRecord.attachments.map(({ uri }) =>
+                api.attachmentURL(uri)
+              )}
+              errorPlaceHolder={imagePlaceholder(subduedBackground)}
+            />
+          ) : (
+            imagePlaceholder(subduedBackground)
+          )}
+          {/* </EuiSkeletonRectangle> */}
         </EuiFlexGroup>
       }
       title={
@@ -176,10 +171,10 @@ const RecordSearchResultItem = ({
 
 export default RecordSearchResultItem;
 
-function imagePlaceholder() {
+function imagePlaceholder(background: string) {
   return (
     <EuiFlexGroup
-      style={{ height: 320 }}
+      style={{ height: 320, background: background }}
       alignItems="center"
       justifyContent="center"
     >

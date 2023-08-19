@@ -60,28 +60,24 @@ const ImageCarousel = ({
 
   return (
     <EuiFlexGroup justifyContent="center" direction="column" gutterSize="xs">
-      <EuiFlexItem>
-        {isError ? (
-          errorPlaceHolder
-        ) : (
-          <EuiImage
-            height={height}
-            width={width}
-            style={{ objectFit: "scale-down" }}
-            src={imageUrls[imageIndex]}
-            alt={`${imageIndex}`}
-            onError={() => setState({ ...state, isError: true })}
-          />
-        )}
-      </EuiFlexItem>
-      <EuiFlexItem>
-        {carouselNavigation(
-          imageUrls,
-          imageIndex,
-          decreaseImageIndex,
-          increaseImageIndex
-        )}
-      </EuiFlexItem>
+      {isError ? (
+        errorPlaceHolder
+      ) : (
+        <EuiImage
+          height={height}
+          width={width}
+          style={{ objectFit: "scale-down" }}
+          src={imageUrls[imageIndex]}
+          alt={`${imageIndex}`}
+          onError={() => setState({ ...state, isError: true })}
+        />
+      )}
+      {carouselNavigation(
+        imageUrls,
+        imageIndex,
+        decreaseImageIndex,
+        increaseImageIndex
+      )}
     </EuiFlexGroup>
   );
 };
@@ -100,7 +96,6 @@ function carouselNavigation(
       alignItems="center"
       style={{
         visibility: images.length === 1 ? "hidden" : "visible",
-        background: "transparent",
       }}
     >
       <EuiFlexItem grow={false}>

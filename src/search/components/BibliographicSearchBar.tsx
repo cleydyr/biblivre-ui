@@ -1,4 +1,11 @@
-import { EuiButton, EuiFlexGroup, EuiFlexItem, EuiSwitch } from "@elastic/eui";
+import {
+  EuiButton,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiI18n,
+  EuiSwitch,
+  useEuiI18n,
+} from "@elastic/eui";
 import noop from "../utils/noop";
 import AdvancedBibliographicSearchBar from "./AdvancedBibliographicSearchBar";
 import SimpleBibliographicSearchBar from "./SimpleBibliographicSearchBar";
@@ -46,14 +53,31 @@ export const BibliographicSearchBar = (props: BibliographicSearchBarProps) => {
             }}
             submitButton={
               <EuiButton onClick={() => onSubmit(search)}>
-                {search.query ? "Search" : "List All"}
+                {search.query ? (
+                  <EuiI18n
+                    token="search.common.button.search"
+                    default="Pesquisar"
+                  />
+                ) : (
+                  <EuiI18n
+                    token="search.common.button.list_all"
+                    default="Listar Todos"
+                  />
+                )}
               </EuiButton>
             }
           />
         )}
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
-        <EuiSwitch label="Advanced" checked={isAdvancedMode} onChange={noop} />
+        <EuiSwitch
+          label={useEuiI18n(
+            "search.common.advanced_search",
+            "Pesquisa avançada"
+          )}
+          checked={isAdvancedMode}
+          onChange={noop}
+        />
       </EuiFlexItem>
     </EuiFlexGroup>
   );
