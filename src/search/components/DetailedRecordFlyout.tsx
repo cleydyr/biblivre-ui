@@ -32,6 +32,7 @@ import {
   OpenBiblivreBibliographicRecord,
 } from "../types";
 import { BibliographicSearchAPI } from "../api/search";
+import usePartialState from "../../usePartialState";
 
 type FormSubfieldProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;
@@ -244,7 +245,7 @@ export function DetailedRecordFlyout({
     },
   ];
 
-  const [state, setState] = useState(initialState);
+  const [state, patchState] = usePartialState(initialState);
 
   const { selectedTabId } = state;
 
@@ -264,7 +265,7 @@ export function DetailedRecordFlyout({
             <EuiTab
               key={tab.id}
               isSelected={tab.id === selectedTabId}
-              onClick={() => setState({ selectedTabId: tab.id })}
+              onClick={() => patchState({ selectedTabId: tab.id })}
               append={tab.append}
             >
               {tab.name}

@@ -18,6 +18,7 @@ import { OpenBiblivreBibliographicRecord, type BiblioRecord } from "../types";
 import { useEffect, useState } from "react";
 import { BibliographicSearchAPI } from "../api/search";
 import ImageCarousel from "./ImageCarousel";
+import usePartialState from "../../usePartialState";
 
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
@@ -54,7 +55,7 @@ const RecordSearchResultItem = ({
     isLoadingCover: true,
   };
 
-  const [state, setState] = useState(initialState);
+  const [state, patchState] = usePartialState(initialState);
 
   const edition = json?.["250"]?.[0]?.["a"]?.[0];
 
@@ -66,8 +67,7 @@ const RecordSearchResultItem = ({
     async function openRecord() {
       const { data: openedRecord } = await api.open(recordId);
 
-      setState({
-        ...state,
+      patchState({
         openedRecord,
         isLoadingCover: false,
       });

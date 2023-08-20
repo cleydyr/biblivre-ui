@@ -13,6 +13,7 @@ import {
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
 import { DetailedRecordFlyout } from "./DetailedRecordFlyout";
 import { BibliographicSearchAPI } from "../api/search";
+import usePartialState from "../../usePartialState";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;
@@ -36,15 +37,14 @@ type SearchComponentProps = {
 };
 
 export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
-  const [state, setState] = useState(initialState);
+  const [state, patchState] = usePartialState(initialState);
 
   const doSearch = async ({ query }: SearchParameters) => {
     toggleLoadingResults();
 
     const results = await (query === "" ? api.listAll() : api.search(query));
 
-    setState({
-      ...state,
+    patchState({
       loading: false,
       results,
     });
@@ -61,16 +61,14 @@ export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
       0
     );
 
-    setState({
-      ...state,
+    patchState({
       loading: false,
       results: newResults,
     });
   };
 
   const toggleLoadingResults = () => {
-    setState({
-      ...state,
+    patchState({
       loading: true,
     });
   };
@@ -78,15 +76,13 @@ export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
   const setDetailedRecord = (
     detailedRecord?: OpenBiblivreBibliographicRecord
   ) => {
-    setState({
-      ...state,
+    patchState({
       detailedRecord,
     });
   };
 
   const addToExport = (record: BiblioRecord): void => {
-    setState({
-      ...state,
+    patchState({
       exportResults: [...state.exportResults, record],
     });
   };

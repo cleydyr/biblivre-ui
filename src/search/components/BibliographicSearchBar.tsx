@@ -11,6 +11,7 @@ import AdvancedBibliographicSearchBar from "./AdvancedBibliographicSearchBar";
 import SimpleBibliographicSearchBar from "./SimpleBibliographicSearchBar";
 import { SearchParameters } from "../types";
 import { useState } from "react";
+import usePartialState from "../../usePartialState";
 
 type BibliographicSearchBarProps = {
   onSubmit: (search: SearchParameters) => Promise<void>;
@@ -31,11 +32,11 @@ const initialState: BibliographicSearchBarState = {
 export const BibliographicSearchBar = (props: BibliographicSearchBarProps) => {
   const { onSubmit } = props;
 
-  const [{ isAdvancedMode, search }, setState] = useState(initialState);
+  const [{ isAdvancedMode, search }, patchState] =
+    usePartialState(initialState);
 
   const onQueryChange = (newSearch: SearchParameters) => {
-    setState({
-      isAdvancedMode,
+    patchState({
       search: newSearch,
     });
   };

@@ -8,6 +8,7 @@ import {
   EuiImage,
 } from "@elastic/eui";
 import { ReactNode, useState } from "react";
+import usePartialState from "../../usePartialState";
 
 type ImageCarouselProps = {
   imageUrls: Array<string>;
@@ -40,19 +41,19 @@ const ImageCarousel = ({
   height,
   errorPlaceHolder,
 }: ImageCarouselProps) => {
-  const [state, setState] = useState(initialState);
+  const [state, patchState] = usePartialState(initialState);
 
   const { imageIndex, isError } = state;
 
   const decreaseImageIndex = () => {
-    setState({
+    patchState({
       isError: false,
       imageIndex: (imageIndex - 1 + imageUrls.length) % imageUrls.length,
     });
   };
 
   const increaseImageIndex = () => {
-    setState({
+    patchState({
       isError: false,
       imageIndex: (imageIndex + 1) % imageUrls.length,
     });
@@ -69,7 +70,7 @@ const ImageCarousel = ({
           style={{ objectFit: "scale-down" }}
           src={imageUrls[imageIndex]}
           alt={`${imageIndex}`}
-          onError={() => setState({ ...state, isError: true })}
+          onError={() => patchState({ isError: true })}
         />
       )}
       {carouselNavigation(

@@ -7,6 +7,7 @@ import { SearchComponent } from "./search/components/Search";
 import { LibraryData, getLibraryData } from "./library/api";
 import searchAPI from "./search/api/search";
 import { I18nShape } from "@elastic/eui/src/components/context/context";
+import usePartialState from "./usePartialState";
 
 type AppState = {
   colorMode: "light" | "dark";
@@ -25,33 +26,18 @@ const initialState: AppState = {
 };
 
 const App = () => {
-  const [state, setState] = useState(initialState);
+  const [state, patchState] = usePartialState(initialState);
 
-  const url = "http://localhost/";
+  const url = "http://baixadaliteraria.biblivre.cloud/";
 
   useEffect(() => {
-    getLibraryData(url).then((data) => {
-      const { title, subtitle, i18n, biblioFields, holdingFields } = data;
-
-      setState({
-        ...state,
-        libraryData: {
-          title,
-          subtitle,
-          biblioFields,
-          i18n,
-          holdingFields,
-        },
-      });
-    });
+    getLibraryData(url).then((libraryData) => patchState({ libraryData }));
   }, []);
 
-  const toggleTheme = () => {
-    setState({
-      ...state,
+  const toggleTheme = () =>
+    patchState({
       colorMode: state.colorMode === "light" ? "dark" : "light",
     });
-  };
 
   const {
     libraryData: { i18n, biblioFields },
