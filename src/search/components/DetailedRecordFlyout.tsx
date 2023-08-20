@@ -42,7 +42,7 @@ export function DetailedRecordFlyout({
       allTabs
         .find((tab) => tab.id === selectedTabId)
         ?.content({ record, attachmentURL, biblioFormFieldsConfig }),
-    [selectedTabId, record.id]
+    [selectedTabId, record]
   );
 
   return (

@@ -10,7 +10,6 @@ import noop from "../utils/noop";
 import AdvancedBibliographicSearchBar from "./AdvancedBibliographicSearchBar";
 import SimpleBibliographicSearchBar from "./SimpleBibliographicSearchBar";
 import { SearchParameters } from "../types";
-import { useState } from "react";
 import usePartialState from "../../hooks/usePartialState";
 
 type BibliographicSearchBarProps = {

@@ -7,7 +7,7 @@ import {
   EuiIcon,
   EuiImage,
 } from "@elastic/eui";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import usePartialState from "../../hooks/usePartialState";
 
 type ImageCarouselProps = {
