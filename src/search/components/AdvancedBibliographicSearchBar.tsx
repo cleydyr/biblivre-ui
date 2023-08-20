@@ -1,8 +1,7 @@
 import { EuiSearchBar } from "@elastic/eui";
-import { SearchParameters } from "../types";
 
 type AdvancedBibliographicSearchBarProps = {
-  onQueryChange: (search: SearchParameters) => void;
+  onQueryChange: (search: string) => void;
 };
 
 const AdvancedBibliographicSearchBar = (
@@ -10,15 +9,7 @@ const AdvancedBibliographicSearchBar = (
 ) => {
   const { onQueryChange } = props;
 
-  return (
-    <EuiSearchBar
-      onChange={(evt) =>
-        onQueryChange({
-          query: evt.queryText,
-        })
-      }
-    />
-  );
+  return <EuiSearchBar onChange={(evt) => onQueryChange(evt.queryText)} />;
 };
 
 export default AdvancedBibliographicSearchBar;

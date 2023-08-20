@@ -7,7 +7,7 @@ export type BiblioRecordRaw = {
   isbn?: string;
   title: string;
   shelf_location: string;
-  material_type: MaterialType;
+  material_type: MaterialTypeName;
   database: string;
   publication_year: string;
   marc: string;
@@ -106,24 +106,38 @@ export type FieldRaw = {
 
 export type HoldingAvailability = "available" | "unavailable";
 
-export type MaterialType =
-  | "book"
-  | "pamphlet"
-  | "manuscript"
-  | "thesis"
-  | "periodic"
-  | "articles"
-  | "computer_legible"
-  | "map"
-  | "photo"
-  | "movie"
-  | "score"
-  | "music"
-  | "nonmusical_sound"
-  | "object_3d"
-  | "authorities"
-  | "vocabulary"
-  | "holdings";
+export enum SearchableMaterialType {
+  ALL = "all",
+  BOOK = "book",
+  PAMPHLET = "pamphlet",
+  MANUSCRIPT = "manuscript",
+  THESIS = "thesis",
+  PERIODIC = "periodic",
+  ARTICLES = "articles",
+  COMPUTER_LEGGIBLE = "computer_legible",
+  MAP = "map",
+  PHOTO = "photo",
+  MOVIE = "movie",
+  SCORE = "score",
+  MUSIC = "music",
+  NONMUSICAL_SOUND = "nonmusical_sound",
+  OBJECT_3D = "object_3d",
+}
+
+export enum NonSearchableMaterialType {
+  AUTHORITIES = "authorities",
+  VOCABULARY = "vocabulary",
+  HOLDINGS = "holdings",
+}
+
+const materialTypes = {
+  ...SearchableMaterialType,
+  ...NonSearchableMaterialType,
+};
+
+export type MaterialType = SearchableMaterialType | NonSearchableMaterialType;
+
+export type MaterialTypeName = Lowercase<keyof typeof materialTypes>;
 
 export type HoldingRaw = {
   accession_number: string;
@@ -133,7 +147,7 @@ export type HoldingRaw = {
   database: string;
   id: number;
   location_d: string;
-  material_type: MaterialType;
+  material_type: MaterialTypeName;
   modified: string;
   record_id: string;
   shelf_location: string;
@@ -147,7 +161,7 @@ export type Holding = {
   database: string;
   id: number;
   location_d: string;
-  material_type: MaterialType;
+  material_type: MaterialTypeName;
   modified: Date;
   record_id: string;
   shelf_location: string;
@@ -215,7 +229,7 @@ export type OpenBiblivreBibliographicRecordRaw = {
   id: number;
   json: BiblivreMarcJson;
   marc: string;
-  material_type: MaterialType;
+  material_type: MaterialTypeName;
   modified: string;
   publication_year: string;
   shelf_location: string;
@@ -239,7 +253,7 @@ export type OpenBiblivreBibliographicRecord = {
   id: number;
   json: BiblivreMarcJson;
   marc: string;
-  materialType: MaterialType;
+  materialType: MaterialTypeName;
   modified: Date;
   publicationYear: string;
   shelfLocation: string;
@@ -265,10 +279,12 @@ export type MessageLevel = "warning" | "error";
 
 export type SimpleSearchParameters = {
   query: string;
+  materialType: SearchableMaterialType;
 };
 
 export type AdvancedSearchParameters = {
   query: string;
+  materialType: SearchableMaterialType;
 };
 
 export type SearchParameters =
@@ -301,7 +317,7 @@ export type FormSubfieldConfig = {
 };
 
 export type FormFieldConfig = {
-  materialType: Array<MaterialType>;
+  materialType: Array<MaterialTypeName>;
   datafield: MarcFieldTag;
   collapsed: boolean;
   repeatable: boolean;
@@ -310,7 +326,7 @@ export type FormFieldConfig = {
 };
 
 export type FormFieldConfigRaw = {
-  material_type: Array<MaterialType>;
+  material_type: Array<MaterialTypeName>;
   datafield: MarcFieldTag;
   collapsed: boolean;
   repeatable: boolean;

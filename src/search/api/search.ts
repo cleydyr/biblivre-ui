@@ -1,6 +1,7 @@
 import {
   BiblivreSearchResult,
   OpenBiblivreBibliographicRecordResult,
+  SearchableMaterialType,
 } from "../types";
 
 import {
@@ -9,8 +10,13 @@ import {
 } from "../utils/searchConversionUtils";
 
 export type BibliographicSearchAPI = {
-  listAll: () => Promise<BiblivreSearchResult>;
-  search: (query: string) => Promise<BiblivreSearchResult>;
+  listAll: (
+    materialType: SearchableMaterialType
+  ) => Promise<BiblivreSearchResult>;
+  search: (
+    query: string,
+    materialType: SearchableMaterialType
+  ) => Promise<BiblivreSearchResult>;
   paginate: (
     page: number,
     search_id: number,
@@ -21,7 +27,7 @@ export type BibliographicSearchAPI = {
 };
 
 const api = (url: string): BibliographicSearchAPI => ({
-  listAll: async () => {
+  listAll: async (materialType: SearchableMaterialType) => {
     const responseBody = await fetchJSONFromServer(
       url,
       "cataloging.bibliographic",
@@ -29,7 +35,7 @@ const api = (url: string): BibliographicSearchAPI => ({
       {
         search_parameters: JSON.stringify({
           database: "main",
-          material_type: "all",
+          material_type: materialType,
           search_mode: "list_all",
         }),
       }
@@ -37,7 +43,7 @@ const api = (url: string): BibliographicSearchAPI => ({
 
     return toBiblivreSearchResult(responseBody);
   },
-  search: async (query: string) => {
+  search: async (query: string, materialType: SearchableMaterialType) => {
     const responseBody = await fetchJSONFromServer(
       url,
       "cataloging.bibliographic",
@@ -45,7 +51,7 @@ const api = (url: string): BibliographicSearchAPI => ({
       {
         search_parameters: JSON.stringify({
           database: "main",
-          material_type: "all",
+          material_type: materialType,
           search_mode: "simple",
           search_terms: [{ query }],
         }),

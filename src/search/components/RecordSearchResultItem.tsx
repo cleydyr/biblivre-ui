@@ -72,12 +72,7 @@ const RecordSearchResultItem = ({
 
   return (
     <EuiCard
-      image={renderCardImage(
-        openedRecord,
-        api,
-        subduedBackground,
-        isOpeningRecord
-      )}
+      image={renderCardImage(openedRecord, api, subduedBackground)}
       title={renderCardTitle(title)}
       titleElement="h4"
       textAlign="left"
@@ -124,8 +119,7 @@ function renderCardBody(
 function renderCardImage(
   openedRecord: OpenBiblivreBibliographicRecord | undefined,
   api: BibliographicSearchAPI,
-  subduedBackground: string,
-  isLoadingCover: boolean
+  subduedBackground: string
 ) {
   return (
     <EuiFlexGroup justifyContent="center" alignItems="center">

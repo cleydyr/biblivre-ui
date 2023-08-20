@@ -2,7 +2,6 @@ import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
 
 import SearchResults from "./SearchResults";
 
-import { useState } from "react";
 import {
   BiblioRecord,
   BiblivreSearchResult,
@@ -39,10 +38,12 @@ type SearchComponentProps = {
 export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
   const [state, patchState] = usePartialState(initialState);
 
-  const doSearch = async ({ query }: SearchParameters) => {
+  const doSearch = async ({ query, materialType }: SearchParameters) => {
     toggleLoadingResults();
 
-    const results = await (query === "" ? api.listAll() : api.search(query));
+    const results = await (query === ""
+      ? api.listAll(materialType)
+      : api.search(query, materialType));
 
     patchState({
       loading: false,
@@ -110,6 +111,7 @@ export function SearchComponent({ api, biblioFields }: SearchComponentProps) {
           biblioFormFieldsConfig={biblioFields}
           onClose={() => setDetailedRecord(undefined)}
           attachmentURL={api.attachmentURL}
+          onAddToExport={() => addToExport(detailedRecord)}
         />
       )}
     </EuiFlexGroup>

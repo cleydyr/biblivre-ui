@@ -1,8 +1,10 @@
 import {
+  EuiButton,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutFooter,
   EuiFlyoutHeader,
+  EuiI18n,
   EuiTab,
   EuiTabs,
 } from "@elastic/eui";
@@ -17,6 +19,7 @@ type DetailedRecordFlyoutProps = {
   biblioFormFieldsConfig: Array<FormFieldConfig>;
   onClose: () => void;
   attachmentURL: (path: string) => string;
+  onAddToExport: () => void;
 };
 
 type DetailedRecordFlyoutState = {
@@ -28,6 +31,7 @@ export function DetailedRecordFlyout({
   biblioFormFieldsConfig,
   onClose,
   attachmentURL,
+  onAddToExport,
 }: DetailedRecordFlyoutProps) {
   const initialState: DetailedRecordFlyoutState = {
     selectedTabId: "holdings",
@@ -62,7 +66,14 @@ export function DetailedRecordFlyout({
         </EuiTabs>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>{selectedTabContent}</EuiFlyoutBody>
-      <EuiFlyoutFooter></EuiFlyoutFooter>
+      <EuiFlyoutFooter>
+        <EuiButton size="s" onClick={onAddToExport}>
+          <EuiI18n
+            token="search.bibliographic.select_item_button"
+            default="Open"
+          />
+        </EuiButton>
+      </EuiFlyoutFooter>
     </EuiFlyout>
   );
 }
