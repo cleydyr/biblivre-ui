@@ -1,4 +1,4 @@
-import { EuiBottomBar, EuiContext, EuiProvider, EuiSwitch } from "@elastic/eui";
+import { EuiContext, EuiProvider } from "@elastic/eui";
 import "./App.css";
 import "@elastic/eui/dist/eui_theme_light.css";
 import { Fragment } from "react";
@@ -57,13 +57,13 @@ const App = () => {
       <Fragment>
         <EuiContext i18n={mappings}>
           <SearchComponent api={searchAPI(url)} biblioFields={biblioFields} />
-          <EuiBottomBar>
+          {/* <EuiBottomBar>
             <EuiSwitch
               onChange={toggleTheme}
               checked={colorMode === "dark"}
               label="Dark Mode"
             ></EuiSwitch>
-          </EuiBottomBar>
+          </EuiBottomBar> */}
         </EuiContext>
       </Fragment>
     </EuiProvider>

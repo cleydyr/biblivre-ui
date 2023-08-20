@@ -7,8 +7,6 @@ import {
   EuiFlexItem,
   EuiI18n,
   EuiIcon,
-  EuiSkeletonRectangle,
-  EuiSkeletonTitle,
   EuiSpacer,
   EuiText,
   useEuiBackgroundColor,
@@ -22,7 +20,6 @@ import useAsyncEffect from "../../hooks/useAsyncEffect";
 
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
-  isLoading: boolean;
   onClick: (openedRecord?: OpenBiblivreBibliographicRecord) => void;
   onAddToExport: () => void;
   api: BibliographicSearchAPI;
@@ -31,7 +28,7 @@ type RecordSearchResultItemPropos = {
 const IMAGE_SIZE = 320;
 
 type RecordSearchResultItemState = {
-  isLoadingCover: boolean;
+  isOpeningRecord: boolean;
   openedRecord?: OpenBiblivreBibliographicRecord;
 };
 
@@ -46,126 +43,168 @@ const RecordSearchResultItem = ({
     materialType,
     json,
   },
-  isLoading,
   onClick,
   onAddToExport,
   api,
 }: RecordSearchResultItemPropos) => {
   const initialState: RecordSearchResultItemState = {
-    isLoadingCover: true,
+    isOpeningRecord: true,
   };
 
   const [state, patchState] = usePartialState(initialState);
 
   const edition = json?.["250"]?.[0]?.["a"]?.[0];
 
-  const { isLoadingCover, openedRecord } = state;
+  const { isOpeningRecord, openedRecord } = state;
 
   const subduedBackground = useEuiBackgroundColor("subdued");
 
   useAsyncEffect(async () => {
+    patchState({ isOpeningRecord: true });
+
     const { data: openedRecord } = await api.open(recordId);
 
     patchState({
       openedRecord,
-      isLoadingCover: false,
+      isOpeningRecord: false,
     });
   }, [recordId]);
 
   return (
     <EuiCard
-      image={
-        <EuiFlexGroup justifyContent="center" alignItems="center">
-          {/* <EuiSkeletonRectangle isLoading={isLoadingCover || isLoading}> */}
-          {hasAttachments(openedRecord) ? (
-            <ImageCarousel
-              width={IMAGE_SIZE}
-              height={IMAGE_SIZE}
-              imageUrls={openedRecord.attachments.map(({ uri }) =>
-                api.attachmentURL(uri)
-              )}
-              errorPlaceHolder={imagePlaceholder(subduedBackground)}
-            />
-          ) : (
-            imagePlaceholder(subduedBackground)
-          )}
-          {/* </EuiSkeletonRectangle> */}
-        </EuiFlexGroup>
-      }
-      title={
-        isLoading ? (
-          <EuiSkeletonTitle size="l" />
-        ) : (
-          <EuiFlexGroup alignItems="flexStart" justifyContent="spaceAround">
-            <EuiFlexItem>
-              <span
-                style={{
-                  overflow: "hidden",
-                  WebkitLineClamp: 4,
-                  WebkitBoxOrient: "vertical",
-                  display: "-webkit-box",
-                }}
-              >
-                {title}
-              </span>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        )
-      }
+      image={renderCardImage(
+        openedRecord,
+        api,
+        subduedBackground,
+        isOpeningRecord
+      )}
+      title={renderCardTitle(title)}
       titleElement="h4"
       textAlign="left"
       betaBadgeProps={{
         label: useEuiI18n(`marc.material_type.${materialType}`, "Book"),
       }}
-      footer={
-        <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
-          <EuiSkeletonTitle isLoading={isLoading}>
-            <EuiBadge color={holdingsAvailable > 0 ? "primary" : "default"}>
-              <EuiI18n
-                token={`cataloging.holding.availability.${
-                  holdingsAvailable > 0 ? "available" : "unavailable"
-                }`}
-                default="?"
-              />
-            </EuiBadge>
-          </EuiSkeletonTitle>
-          <EuiSkeletonRectangle isLoading={isLoading}>
-            <EuiButton size="s" onClick={() => onClick(openedRecord)}>
-              <EuiI18n
-                token="search.bibliographic.open_item_button"
-                default="Open"
-              />
-            </EuiButton>
-          </EuiSkeletonRectangle>
-        </EuiFlexGroup>
-      }
+      footer={renderCardFooter(
+        isOpeningRecord,
+        holdingsAvailable,
+        onClick,
+        openedRecord
+      )}
     >
-      <EuiFlexGrid>
-        <EuiFlexGroup>
-          <EuiFlexItem>
-            <EuiSkeletonTitle isLoading={isLoading}>
-              <EuiText>{author}</EuiText>
-            </EuiSkeletonTitle>
-            <EuiSpacer size="xs" />
-            <EuiSkeletonTitle isLoading={isLoading} size="s">
-              <EuiText size="s">{publicationYear}</EuiText>
-            </EuiSkeletonTitle>
-            <EuiSpacer size="xs" />
-            <EuiSkeletonTitle isLoading={isLoading} size="xs">
-              <EuiText size="xs">{edition}</EuiText>
-            </EuiSkeletonTitle>
-            <EuiSpacer size="xs" />
-            <EuiSkeletonTitle isLoading={isLoading} size="xs">
-              <EuiText size="xs">{subject}</EuiText>
-            </EuiSkeletonTitle>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiFlexGrid>
+      {renderCardBody(author, publicationYear, edition, subject)}
     </EuiCard>
   );
 };
 
 export default RecordSearchResultItem;
+
+function renderCardBody(
+  author: string,
+  publicationYear: string,
+  edition: string,
+  subject: string
+) {
+  return (
+    <EuiFlexGrid>
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiText>{author}</EuiText>
+          <EuiSpacer size="xs" />
+          <EuiText size="s">{publicationYear}</EuiText>
+          <EuiSpacer size="xs" />
+          <EuiText size="xs">{edition}</EuiText>
+          <EuiSpacer size="xs" />
+          <EuiText size="xs">{subject}</EuiText>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiFlexGrid>
+  );
+}
+
+function renderCardImage(
+  openedRecord: OpenBiblivreBibliographicRecord | undefined,
+  api: BibliographicSearchAPI,
+  subduedBackground: string,
+  isLoadingCover: boolean
+) {
+  return (
+    <EuiFlexGroup justifyContent="center" alignItems="center">
+      {/* <EuiSkeletonRectangle
+        width={IMAGE_SIZE - 3}
+        height={IMAGE_SIZE}
+        isLoading={isLoadingCover || isLoading}
+      > */}
+      {hasAttachments(openedRecord) ? (
+        <ImageCarousel
+          width={IMAGE_SIZE}
+          height={IMAGE_SIZE}
+          imageUrls={openedRecord.attachments.map(({ uri }) =>
+            api.attachmentURL(uri)
+          )}
+          errorPlaceHolder={imagePlaceholder(subduedBackground)}
+        />
+      ) : (
+        imagePlaceholder(subduedBackground)
+      )}
+      {/* </EuiSkeletonRectangle> */}
+    </EuiFlexGroup>
+  );
+}
+
+function renderCardTitle(title: string) {
+  return (
+    <EuiFlexGroup alignItems="flexStart" justifyContent="spaceAround">
+      <EuiFlexItem>
+        <span
+          style={{
+            overflow: "hidden",
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: "vertical",
+            display: "-webkit-box",
+          }}
+        >
+          {title}
+        </span>
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
+}
+
+function renderCardFooter(
+  isOpeningRecord: boolean,
+  holdingsAvailable: number,
+  onClick: (openedRecord?: OpenBiblivreBibliographicRecord) => void,
+  openedRecord: OpenBiblivreBibliographicRecord | undefined
+) {
+  return (
+    <EuiFlexGroup justifyContent="spaceBetween" alignItems="center">
+      <EuiBadge color={holdingsAvailable > 0 ? "primary" : "default"}>
+        <EuiI18n
+          token={`cataloging.holding.availability.${getAvailabilityKey()}`}
+          default="?"
+        />
+      </EuiBadge>
+      <EuiButton
+        isLoading={isOpeningRecord}
+        size="s"
+        onClick={() => onClick(openedRecord)}
+      >
+        <EuiI18n
+          token={
+            isOpeningRecord
+              ? "common.loading"
+              : "search.bibliographic.open_item_button"
+          }
+          default="Open"
+        />
+      </EuiButton>
+    </EuiFlexGroup>
+  );
+
+  function getAvailabilityKey() {
+    return holdingsAvailable > 0 ? "available" : "unavailable";
+  }
+}
 
 function imagePlaceholder(background: string) {
   return (
@@ -174,13 +213,13 @@ function imagePlaceholder(background: string) {
       alignItems="center"
       justifyContent="center"
     >
-      <EuiIcon type="questionInCircle" size="xxl" />;
+      <EuiIcon type="questionInCircle" size="xxl" />
     </EuiFlexGroup>
   );
 }
 
 function hasAttachments(
   openedRecord?: OpenBiblivreBibliographicRecord
-): openedRecord is OpenBiblivreBibliographicRecord & boolean {
+): openedRecord is OpenBiblivreBibliographicRecord {
   return (openedRecord?.attachments?.length ?? 0) > 0;
 }

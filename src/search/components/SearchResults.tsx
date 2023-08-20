@@ -4,6 +4,7 @@ import {
   EuiFlexGroup,
   EuiPagination,
   EuiProgress,
+  EuiSkeletonRectangle,
 } from "@elastic/eui";
 import {
   BiblioRecord,
@@ -39,19 +40,26 @@ const renderSearchResults = (
 ): ReactNode => {
   const { data, recordCount, recordsPerPage, page } = search;
 
+  const loadingResultsPlaceholder = Array(20)
+    .fill(0)
+    .map((_, index) => (
+      <EuiSkeletonRectangle key={index} width={290.8} height={488} />
+    ));
+
   return (
     <EuiFlexGrid>
       <EuiFlexGrid columns={4}>
-        {data.map((record) => (
-          <RecordSearchResultItem
-            key={record.id}
-            record={record}
-            isLoading={isLoading}
-            onAddToExport={() => onAddToExport(record)}
-            onClick={onRecordClick}
-            api={api}
-          />
-        ))}
+        {isLoading
+          ? loadingResultsPlaceholder
+          : data.map((record) => (
+              <RecordSearchResultItem
+                key={record.id}
+                record={record}
+                onAddToExport={() => onAddToExport(record)}
+                onClick={onRecordClick}
+                api={api}
+              />
+            ))}
       </EuiFlexGrid>
       <EuiFlexGroup justifyContent="center">
         <EuiPagination
