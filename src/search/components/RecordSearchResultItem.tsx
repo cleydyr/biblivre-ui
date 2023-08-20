@@ -15,10 +15,10 @@ import {
   useEuiI18n,
 } from "@elastic/eui";
 import { OpenBiblivreBibliographicRecord, type BiblioRecord } from "../types";
-import { useEffect, useState } from "react";
 import { BibliographicSearchAPI } from "../api/search";
 import ImageCarousel from "./ImageCarousel";
-import usePartialState from "../../usePartialState";
+import usePartialState from "../../hooks/usePartialState";
+import useAsyncEffect from "../../hooks/useAsyncEffect";
 
 type RecordSearchResultItemPropos = {
   record: BiblioRecord;
@@ -63,17 +63,13 @@ const RecordSearchResultItem = ({
 
   const subduedBackground = useEuiBackgroundColor("subdued");
 
-  useEffect(() => {
-    async function openRecord() {
-      const { data: openedRecord } = await api.open(recordId);
+  useAsyncEffect(async () => {
+    const { data: openedRecord } = await api.open(recordId);
 
-      patchState({
-        openedRecord,
-        isLoadingCover: false,
-      });
-    }
-
-    openRecord();
+    patchState({
+      openedRecord,
+      isLoadingCover: false,
+    });
   }, [recordId]);
 
   return (

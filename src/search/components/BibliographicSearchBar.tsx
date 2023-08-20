@@ -11,7 +11,7 @@ import AdvancedBibliographicSearchBar from "./AdvancedBibliographicSearchBar";
 import SimpleBibliographicSearchBar from "./SimpleBibliographicSearchBar";
 import { SearchParameters } from "../types";
 import { useState } from "react";
-import usePartialState from "../../usePartialState";
+import usePartialState from "../../hooks/usePartialState";
 
 type BibliographicSearchBarProps = {
   onSubmit: (search: SearchParameters) => Promise<void>;

@@ -13,7 +13,7 @@ import {
 import { BibliographicSearchBar } from "./BibliographicSearchBar";
 import { DetailedRecordFlyout } from "./DetailedRecordFlyout";
 import { BibliographicSearchAPI } from "../api/search";
-import usePartialState from "../../usePartialState";
+import usePartialState from "../../hooks/usePartialState";
 
 type SearchComponentState = {
   results?: BiblivreSearchResult;

@@ -32,7 +32,7 @@ import {
   OpenBiblivreBibliographicRecord,
 } from "../types";
 import { BibliographicSearchAPI } from "../api/search";
-import usePartialState from "../../usePartialState";
+import usePartialState from "../../hooks/usePartialState";
 
 type FormSubfieldProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;

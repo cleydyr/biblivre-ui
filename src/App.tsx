@@ -1,13 +1,14 @@
 import { EuiBottomBar, EuiContext, EuiProvider, EuiSwitch } from "@elastic/eui";
 import "./App.css";
 import "@elastic/eui/dist/eui_theme_light.css";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 
 import { SearchComponent } from "./search/components/Search";
 import { LibraryData, getLibraryData } from "./library/api";
 import searchAPI from "./search/api/search";
 import { I18nShape } from "@elastic/eui/src/components/context/context";
-import usePartialState from "./usePartialState";
+import usePartialState from "./hooks/usePartialState";
+import useAsyncEffect from "./hooks/useAsyncEffect";
 
 type AppState = {
   colorMode: "light" | "dark";
@@ -28,10 +29,12 @@ const initialState: AppState = {
 const App = () => {
   const [state, patchState] = usePartialState(initialState);
 
-  const url = "http://baixadaliteraria.biblivre.cloud/";
+  const url = "https://baixadaliteraria.biblivre.cloud/bcjudithlacaz/";
 
-  useEffect(() => {
-    getLibraryData(url).then((libraryData) => patchState({ libraryData }));
+  useAsyncEffect(async () => {
+    const libraryData = await getLibraryData(url);
+
+    patchState({ libraryData });
   }, []);
 
   const toggleTheme = () =>
