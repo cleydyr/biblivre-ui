@@ -22,8 +22,7 @@ import {
   EuiTitle,
   useEuiI18n,
 } from "@elastic/eui";
-import { field } from "../../translations/utils";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo } from "react";
 import {
   FormFieldConfig,
   MarcFieldIndicator,
@@ -33,6 +32,8 @@ import {
 } from "../types";
 import { BibliographicSearchAPI } from "../api/search";
 import usePartialState from "../../hooks/usePartialState";
+import { FormFieldI18n } from "../../translations/FormFieldI18n";
+import { groupBy } from "../../utils";
 
 type FormSubfieldProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;
@@ -119,7 +120,7 @@ export function DetailedRecordFlyout({
       content: (openedRecord: OpenBiblivreBibliographicRecord) => (
         <EuiDescriptionList
           listItems={openedRecord.fields.map(({ value, datafield }) => ({
-            title: field(datafield, ""),
+            title: <FormFieldI18n field={datafield} />,
             description: value,
           }))}
         />
@@ -129,42 +130,16 @@ export function DetailedRecordFlyout({
       id: "form",
       name: useEuiI18n("cataloging.tabs.form", "Formulário"),
       content: (openedRecord: OpenBiblivreBibliographicRecord) => {
-        const tagsToRender = filterTagsToRender(openedRecord);
+        const tagsToRender = filterTagsToRender(
+          openedRecord,
+          biblioFormFieldsConfig
+        );
 
-        const briefFormData = tagsToRender
-          .flatMap((tag) => {
-            const marcFieldValues = openedRecord.json[tag];
-
-            return marcFieldValues.flatMap((marcFieldValue) =>
-              Object.keys(marcFieldValue).flatMap((subfieldOrIndicator) => {
-                const marcSubfieldTag =
-                  subfieldOrIndicator as MarcFormFieldConfigPropertyName;
-
-                const subfieldValue = marcFieldValue[marcSubfieldTag];
-
-                if (Array.isArray(subfieldValue)) {
-                  return subfieldValue.map((v) => ({
-                    datafield: tag,
-                    subfieldOrIndicator: marcSubfieldTag,
-                    value: v,
-                  }));
-                }
-
-                if (subfieldValue?.trim()?.length > 0) {
-                  return [
-                    {
-                      datafield: tag,
-                      subfieldOrIndicator: marcSubfieldTag,
-                      value: subfieldValue,
-                    },
-                  ];
-                }
-
-                return [];
-              })
-            );
-          })
-          .sort(comparingSubfieldsAndIndicators(biblioFormFieldsConfig));
+        const briefFormData = toBriefFormData(
+          tagsToRender,
+          openedRecord,
+          biblioFormFieldsConfig
+        );
 
         return (
           <EuiFlexGrid>
@@ -186,11 +161,9 @@ export function DetailedRecordFlyout({
                     buttonContent={accordionButtonContent(recordDatafield)}
                     initialIsOpen={!collapsed}
                   >
-                    {accordionBody(
-                      briefFormData.filter(
-                        (w) => w.datafield === recordDatafield
-                      )
-                    )}
+                    <SubfieldsDescriptionList
+                      configSubfields={briefFormData[recordDatafield]}
+                    />
                   </EuiAccordion>
                   <EuiSpacer />
                 </EuiFlexItem>
@@ -278,24 +251,6 @@ export function DetailedRecordFlyout({
     </EuiFlyout>
   );
 
-  function filterTagsToRender(
-    record: OpenBiblivreBibliographicRecord
-  ): MarcFieldTag[] {
-    return Object.keys(record.json)
-      .filter((recordDatafield) => {
-        const biblioFormFieldConfig = biblioFormFieldsConfig.find(
-          ({ datafield }) => datafield === recordDatafield
-        );
-
-        return biblioFormFieldConfig?.subfields.some(({ subfield }) =>
-          record.json[recordDatafield].some(
-            (recordSubfield) => recordSubfield[subfield] !== undefined
-          )
-        );
-      })
-      .sort(comparingDatafield(biblioFormFieldsConfig));
-  }
-
   function accordionButtonContent(recordDatafield: string): ReactNode {
     return (
       <EuiFlexGroup justifyContent="spaceEvenly">
@@ -316,12 +271,16 @@ export function DetailedRecordFlyout({
     );
   }
 
-  function accordionBody(configSubfields: FormSubfieldProps[]) {
+  function SubfieldsDescriptionList({
+    configSubfields,
+  }: {
+    configSubfields: FormSubfieldProps[];
+  }) {
     const listItems = configSubfields.map(
-      ({ datafield, subfieldOrIndicator: subfield, value }) => {
-        const isIndicator = _isIndicator(subfield);
+      ({ datafield, subfieldOrIndicator, value }) => {
+        const isIndicator = subfieldOrIndicator.length > 1;
 
-        const indicatorOrder = subfield.substring(3);
+        const indicatorOrder = subfieldOrIndicator.substring(3);
 
         return {
           title: (
@@ -331,14 +290,16 @@ export function DetailedRecordFlyout({
                   token={`${translationPrefix}${datafield}.${
                     isIndicator
                       ? `indicator.${indicatorOrder}`
-                      : `subfield.${subfield}`
+                      : `subfield.${subfieldOrIndicator}`
                   }`}
                   default=""
                 />
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiBadge>
-                  {isIndicator ? `#${indicatorOrder}` : `$${subfield}`}
+                  {isIndicator
+                    ? `#${indicatorOrder}`
+                    : `$${subfieldOrIndicator}`}
                 </EuiBadge>
               </EuiFlexItem>
             </EuiFlexGroup>
@@ -375,6 +336,67 @@ export function DetailedRecordFlyout({
       </EuiPanel>
     );
   }
+}
+
+function filterTagsToRender(
+  record: OpenBiblivreBibliographicRecord,
+  biblioFormFieldsConfig: FormFieldConfig[]
+): MarcFieldTag[] {
+  return Object.keys(record.json)
+    .filter((recordDatafield) => {
+      const biblioFormFieldConfig = biblioFormFieldsConfig.find(
+        ({ datafield }) => datafield === recordDatafield
+      );
+
+      return biblioFormFieldConfig?.subfields.some(({ subfield }) =>
+        record.json[recordDatafield].some(
+          (recordSubfield) => recordSubfield[subfield] !== undefined
+        )
+      );
+    })
+    .sort(comparingDatafield(biblioFormFieldsConfig));
+}
+
+function toBriefFormData(
+  tagsToRender: string[],
+  openedRecord: OpenBiblivreBibliographicRecord,
+  biblioFormFieldsConfig: FormFieldConfig[]
+): Record<MarcFieldTag, FormSubfieldProps[]> {
+  return tagsToRender
+    .flatMap((tag) => {
+      const marcFieldValues = openedRecord.json[tag];
+
+      return marcFieldValues.flatMap((marcFieldValue) =>
+        Object.keys(marcFieldValue).flatMap((subfieldOrIndicator) => {
+          const marcSubfieldTag =
+            subfieldOrIndicator as MarcFormFieldConfigPropertyName;
+
+          const subfieldValue = marcFieldValue[marcSubfieldTag];
+
+          if (typeof subfieldValue === "string") {
+            if (subfieldValue.trim().length === 0) {
+              return [];
+            }
+
+            return [
+              {
+                datafield: tag,
+                subfieldOrIndicator: marcSubfieldTag,
+                value: subfieldValue,
+              },
+            ];
+          }
+
+          return subfieldValue.map((value) => ({
+            datafield: tag,
+            subfieldOrIndicator: marcSubfieldTag,
+            value: value,
+          }));
+        })
+      );
+    })
+    .sort(comparingSubfieldsAndIndicators(biblioFormFieldsConfig))
+    .reduce(groupBy("datafield"), {});
 }
 
 function holdingsCountSummary(
@@ -418,27 +440,23 @@ function holdingsCountSummary(
   );
 }
 
-function _isIndicator(subfield: string): subfield is MarcFieldIndicator {
-  return ["ind1", "ind2"].includes(subfield);
-}
-
 function comparingSubfieldsAndIndicators(
   biblioFields: FormFieldConfig[]
 ): (a: FormSubfieldProps, b: FormSubfieldProps) => number {
   return (a, b) => {
-    if (a.subfieldOrIndicator === "ind1") {
+    if (a.subfieldOrIndicator === MarcFieldIndicator.IND1) {
       return -1;
     }
 
-    if (b.subfieldOrIndicator === "ind1") {
+    if (b.subfieldOrIndicator === MarcFieldIndicator.IND1) {
       return 1;
     }
 
-    if (a.subfieldOrIndicator === "ind2") {
+    if (a.subfieldOrIndicator === MarcFieldIndicator.IND2) {
       return -1;
     }
 
-    if (b.subfieldOrIndicator === "ind2") {
+    if (b.subfieldOrIndicator === MarcFieldIndicator.IND2) {
       return 1;
     }
 
