@@ -33,9 +33,9 @@ import {
 import { BibliographicSearchAPI } from "../api/search";
 import usePartialState from "../../hooks/usePartialState";
 import { FormFieldI18n } from "../../translations/FormFieldI18n";
-import { groupBy } from "../../utils";
+import { groupBy, indexBy } from "../../utils";
 
-type FormSubfieldProps = {
+type SubfieldFormProps = {
   subfieldOrIndicator: MarcFormFieldConfigPropertyName;
   datafield: MarcFieldTag;
   value: string;
@@ -130,9 +130,12 @@ export function DetailedRecordFlyout({
       id: "form",
       name: useEuiI18n("cataloging.tabs.form", "Formulário"),
       content: (openedRecord: OpenBiblivreBibliographicRecord) => {
+        const biblioFormFieldsConfigIndexedByDatafield =
+          biblioFormFieldsConfig.reduce(indexBy("datafield"), {});
+
         const tagsToRender = filterTagsToRender(
           openedRecord,
-          biblioFormFieldsConfig
+          biblioFormFieldsConfigIndexedByDatafield
         );
 
         const briefFormData = toBriefFormData(
@@ -144,13 +147,8 @@ export function DetailedRecordFlyout({
         return (
           <EuiFlexGrid>
             {tagsToRender.map((recordDatafield) => {
-              const dataFieldConfig = biblioFormFieldsConfig.find(
-                (biblioField) => biblioField.datafield === recordDatafield
-              );
-
-              if (dataFieldConfig === undefined) {
-                return <></>;
-              }
+              const dataFieldConfig =
+                biblioFormFieldsConfigIndexedByDatafield[recordDatafield];
 
               const { collapsed } = dataFieldConfig;
 
@@ -158,11 +156,13 @@ export function DetailedRecordFlyout({
                 <EuiFlexItem key={recordDatafield}>
                   <EuiAccordion
                     id={`${record.id}#${recordDatafield}`}
-                    buttonContent={accordionButtonContent(recordDatafield)}
+                    buttonContent={
+                      <AccordionButtonContent {...{ recordDatafield }} />
+                    }
                     initialIsOpen={!collapsed}
                   >
                     <SubfieldsDescriptionList
-                      configSubfields={briefFormData[recordDatafield]}
+                      subfieldFormProps={briefFormData[recordDatafield]}
                     />
                   </EuiAccordion>
                   <EuiSpacer />
@@ -251,7 +251,11 @@ export function DetailedRecordFlyout({
     </EuiFlyout>
   );
 
-  function accordionButtonContent(recordDatafield: string): ReactNode {
+  function AccordionButtonContent({
+    recordDatafield,
+  }: {
+    recordDatafield: string;
+  }) {
     return (
       <EuiFlexGroup justifyContent="spaceEvenly">
         <EuiFlexItem grow={false}>
@@ -272,9 +276,9 @@ export function DetailedRecordFlyout({
   }
 
   function SubfieldsDescriptionList({
-    configSubfields,
+    subfieldFormProps: configSubfields,
   }: {
-    configSubfields: FormSubfieldProps[];
+    subfieldFormProps: SubfieldFormProps[];
   }) {
     const listItems = configSubfields.map(
       ({ datafield, subfieldOrIndicator, value }) => {
@@ -283,42 +287,17 @@ export function DetailedRecordFlyout({
         const indicatorOrder = subfieldOrIndicator.substring(3);
 
         return {
-          title: (
-            <EuiFlexGroup justifyContent="flexEnd">
-              <EuiFlexItem grow={false}>
-                <EuiI18n
-                  token={`${translationPrefix}${datafield}.${
-                    isIndicator
-                      ? `indicator.${indicatorOrder}`
-                      : `subfield.${subfieldOrIndicator}`
-                  }`}
-                  default=""
-                />
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiBadge>
-                  {isIndicator
-                    ? `#${indicatorOrder}`
-                    : `$${subfieldOrIndicator}`}
-                </EuiBadge>
-              </EuiFlexItem>
-            </EuiFlexGroup>
+          title: renderTitle(
+            datafield,
+            subfieldOrIndicator,
+            isIndicator,
+            indicatorOrder
           ),
-          description: (
-            <EuiFlexGroup>
-              <EuiFlexItem>
-                <EuiText color="subdued" size="s">
-                  {isIndicator ? (
-                    <EuiI18n
-                      token={`${translationPrefix}${datafield}.indicator.${indicatorOrder}.${value}`}
-                      default=""
-                    />
-                  ) : (
-                    value
-                  )}
-                </EuiText>
-              </EuiFlexItem>
-            </EuiFlexGroup>
+          description: renderDescription(
+            datafield,
+            value,
+            isIndicator,
+            indicatorOrder
           ),
         };
       }
@@ -332,36 +311,87 @@ export function DetailedRecordFlyout({
           compressed
           type="column"
           listItems={listItems}
-        ></EuiDescriptionList>
+        />
       </EuiPanel>
     );
+
+    function renderDescription(
+      datafield: string,
+      value: string,
+      isIndicator: boolean,
+      indicatorOrder: string
+    ): JSX.Element {
+      return (
+        <EuiFlexGroup>
+          <EuiFlexItem>
+            <EuiText color="subdued" size="s">
+              {isIndicator ? (
+                <EuiI18n
+                  token={`${translationPrefix}${datafield}.indicator.${indicatorOrder}.${value}`}
+                  default=""
+                />
+              ) : (
+                value
+              )}
+            </EuiText>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      );
+    }
+
+    function renderTitle(
+      datafield: string,
+      subfieldOrIndicator: string,
+      isIndicator: boolean,
+      indicatorOrder: string
+    ): JSX.Element {
+      return (
+        <EuiFlexGroup justifyContent="flexEnd">
+          <EuiFlexItem grow={false}>
+            <EuiI18n
+              token={`${translationPrefix}${datafield}.${
+                isIndicator
+                  ? `indicator.${indicatorOrder}`
+                  : `subfield.${subfieldOrIndicator}`
+              }`}
+              default=""
+            />
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiBadge>
+              {isIndicator ? `#${indicatorOrder}` : `$${subfieldOrIndicator}`}
+            </EuiBadge>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      );
+    }
   }
 }
 
 function filterTagsToRender(
   record: OpenBiblivreBibliographicRecord,
-  biblioFormFieldsConfig: FormFieldConfig[]
+  biblioFormFieldsConfigGroupedByDatafield: Record<
+    MarcFieldTag,
+    FormFieldConfig
+  >
 ): MarcFieldTag[] {
-  return Object.keys(record.json)
-    .filter((recordDatafield) => {
-      const biblioFormFieldConfig = biblioFormFieldsConfig.find(
-        ({ datafield }) => datafield === recordDatafield
-      );
+  return Object.keys(record.json).filter((recordDatafield) => {
+    const biblioFormFieldConfig =
+      biblioFormFieldsConfigGroupedByDatafield[recordDatafield];
 
-      return biblioFormFieldConfig?.subfields.some(({ subfield }) =>
-        record.json[recordDatafield].some(
-          (recordSubfield) => recordSubfield[subfield] !== undefined
-        )
-      );
-    })
-    .sort(comparingDatafield(biblioFormFieldsConfig));
+    return biblioFormFieldConfig?.subfields.some(({ subfield }) =>
+      record.json[recordDatafield].some(
+        (recordSubfield) => subfield in recordSubfield
+      )
+    );
+  });
 }
 
 function toBriefFormData(
   tagsToRender: string[],
   openedRecord: OpenBiblivreBibliographicRecord,
   biblioFormFieldsConfig: FormFieldConfig[]
-): Record<MarcFieldTag, FormSubfieldProps[]> {
+): Record<MarcFieldTag, SubfieldFormProps[]> {
   return tagsToRender
     .flatMap((tag) => {
       const marcFieldValues = openedRecord.json[tag];
@@ -442,7 +472,7 @@ function holdingsCountSummary(
 
 function comparingSubfieldsAndIndicators(
   biblioFields: FormFieldConfig[]
-): (a: FormSubfieldProps, b: FormSubfieldProps) => number {
+): (a: SubfieldFormProps, b: SubfieldFormProps) => number {
   return (a, b) => {
     if (a.subfieldOrIndicator === MarcFieldIndicator.IND1) {
       return -1;
@@ -481,21 +511,5 @@ function comparingSubfieldsAndIndicators(
     }
 
     return sa.sortOrder - sb.sortOrder;
-  };
-}
-
-function comparingDatafield(
-  biblioFields: FormFieldConfig[]
-): (a: string, b: string) => number {
-  return (a, b) => {
-    const da = biblioFields.find(({ datafield }) => datafield === a);
-
-    const db = biblioFields.find(({ datafield }) => datafield === b);
-
-    if (da === undefined || db === undefined) {
-      return 0;
-    }
-
-    return da.sortOrder - db.sortOrder;
   };
 }
